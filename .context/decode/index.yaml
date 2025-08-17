@@ -1,0 +1,28 @@
+---
+description: Code analysis for documentation generation.
+metadata:
+  documentation_uri: https://socketry.github.io/decode/
+  funding_uri: https://github.com/sponsors/socketry/
+  source_code_uri: https://github.com/socketry/decode.git
+files:
+- path: getting-started.md
+  title: Getting Started with Decode
+  description: The Decode gem provides programmatic access to Ruby code structure
+    and metadata. It can parse Ruby files and extract definitions, comments, and documentation
+    pragmas, enabling code analysis, documentation generation, and other programmatic
+    manipulations of Ruby codebases.
+- path: coverage.md
+  title: Documentation Coverage
+  description: This guide explains how to test and monitor documentation coverage
+    in your Ruby projects using the Decode gem's built-in bake tasks.
+- path: ruby-documentation.md
+  title: Ruby Documentation
+  description: This guide covers documentation practices and pragmas supported by
+    the Decode gem for documenting Ruby code. These pragmas provide structured documentation
+    that can be parsed and used to generate API documentation and achieve complete
+    documentation coverage.
+- path: types.md
+  title: Setting Up RBS Types and Steep Type Checking for Ruby Gems
+  description: This guide covers the process for establishing robust type checking
+    in Ruby gems using RBS and Steep, focusing on automated generation from source
+    documentation and proper validation.
