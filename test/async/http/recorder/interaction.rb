@@ -1,6 +1,9 @@
 # frozen_string_literal: true
 
-require 'async/http/recorder/interaction'
+# Released under the MIT License.
+# Copyright, 2025, by Samuel Williams.
+
+require "async/http/recorder/interaction"
 
 describe Async::HTTP::Recorder::Interaction do
 	let(:simple_request_data) do

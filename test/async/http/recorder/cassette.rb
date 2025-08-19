@@ -1,8 +1,11 @@
 # frozen_string_literal: true
 
-require 'async/http/recorder/cassette'
-require 'async/http/recorder/interaction'
-require 'tmpdir'
+# Released under the MIT License.
+# Copyright, 2025, by Samuel Williams.
+
+require "async/http/recorder/cassette"
+require "async/http/recorder/interaction"
+require "tmpdir"
 
 describe Async::HTTP::Recorder::Cassette do
 	let(:sample_interaction_data) do
@@ -70,7 +73,7 @@ describe Async::HTTP::Recorder::Cassette do
 			end
 		end
 		
-		let(:test_file_path) { File.join(@tmpdir, "test_cassette.json") }
+		let(:test_file_path) {File.join(@tmpdir, "test_cassette.json")}
 		
 		it "saves and loads a cassette to/from JSON" do
 			original_cassette = subject.new([sample_interaction])
@@ -106,7 +109,7 @@ describe Async::HTTP::Recorder::Cassette do
 	with "Enumerable behavior" do
 		it "supports map operation" do
 			cassette = subject.new([sample_interaction])
-			paths = cassette.map { |interaction| interaction.to_h[:request][:path] }
+			paths = cassette.map {|interaction| interaction.to_h[:request][:path]}
 			
 			expect(paths).to be == ["/test"]
 		end
@@ -120,7 +123,7 @@ describe Async::HTTP::Recorder::Cassette do
 			})
 			
 			cassette = subject.new([get_interaction, post_interaction])
-			get_interactions = cassette.select { |i| i.to_h[:request][:method] == "GET" }
+			get_interactions = cassette.select {|i| i.to_h[:request][:method] == "GET"}
 			
 			expect(get_interactions).to have_attributes(length: be == 1)
 		end

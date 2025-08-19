@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
-# Use the covered gem for test coverage reporting:
-require 'covered/sus'
+# Released under the MIT License.
+# Copyright, 2025, by Samuel Williams.
+
+require "covered/sus"
 include Covered::Sus
 
 def before_tests(assertions)

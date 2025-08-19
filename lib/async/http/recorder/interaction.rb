@@ -3,10 +3,10 @@
 # Released under the MIT License.
 # Copyright, 2025, by Samuel Williams.
 
-require 'protocol/http/request'
-require 'protocol/http/response'
-require 'protocol/http/headers'
-require 'protocol/http/body/buffered'
+require "protocol/http/request"
+require "protocol/http/response"
+require "protocol/http/headers"
+require "protocol/http/body/buffered"
 
 module Async
 	module HTTP
@@ -115,9 +115,9 @@ module Async
 					case headers_data
 					when Hash
 						# New format with fields and tail for complete round-trip:
-						if headers_data.key?(:fields) || headers_data.key?('fields')
-							fields = headers_data[:fields] || headers_data['fields']
-							tail = headers_data[:tail] || headers_data['tail']
+						if headers_data.key?(:fields) || headers_data.key?("fields")
+							fields = headers_data[:fields] || headers_data["fields"]
+							tail = headers_data[:tail] || headers_data["tail"]
 							Protocol::HTTP::Headers.new(fields, tail)
 						else
 							# Fallback for old format:

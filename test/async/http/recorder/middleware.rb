@@ -1,11 +1,14 @@
 # frozen_string_literal: true
 
-require 'async/http/recorder/middleware'
-require 'async/http/recorder/cassette'
-require 'protocol/http/request'
-require 'protocol/http/response'
-require 'protocol/http/body/buffered'
-require 'tmpdir'
+# Released under the MIT License.
+# Copyright, 2025, by Samuel Williams.
+
+require "async/http/recorder/middleware"
+require "async/http/recorder/cassette"
+require "protocol/http/request"
+require "protocol/http/response"
+require "protocol/http/body/buffered"
+require "tmpdir"
 
 describe Async::HTTP::Recorder::Middleware do
 	around do |&block|
@@ -15,7 +18,7 @@ describe Async::HTTP::Recorder::Middleware do
 		end
 	end
 	
-	let(:cassette_path) { File.join(@tmpdir, "test_cassette.json") }
+	let(:cassette_path) {File.join(@tmpdir, "test_cassette.json")}
 	
 	let(:simple_app) do
 		->(request) do
@@ -27,7 +30,7 @@ describe Async::HTTP::Recorder::Middleware do
 		->(request) do
 			body = []
 			if request.body
-				request.body.each { |chunk| body << chunk }
+				request.body.each {|chunk| body << chunk}
 			end
 			
 			Protocol::HTTP::Response[200, {"Content-Type" => "text/plain"}, body]
@@ -68,7 +71,7 @@ describe Async::HTTP::Recorder::Middleware do
 		end
 		
 		with "request-only recording (default)" do
-			let(:middleware) { subject.new(simple_app, cassette_path: cassette_path) }
+			let(:middleware) {subject.new(simple_app, cassette_path: cassette_path)}
 			
 			it "records GET requests without body" do
 				response = middleware.call(get_request)
@@ -122,7 +125,7 @@ describe Async::HTTP::Recorder::Middleware do
 				# Wait for any async body capture to complete:
 				if response.body
 					chunks = []
-					response.body.each { |chunk| chunks << chunk }
+					response.body.each {|chunk| chunks << chunk}
 				end
 				
 				# Check if file exists and has content:
@@ -166,7 +169,7 @@ describe Async::HTTP::Recorder::Middleware do
 			
 			# The echo app should receive the request body:
 			body_content = []
-			response.body.each { |chunk| body_content << chunk }
+			response.body.each {|chunk| body_content << chunk}
 			expect(body_content).to be == ['{"name": "John"}']
 		end
 	end

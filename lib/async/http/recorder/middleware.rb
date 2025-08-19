@@ -3,8 +3,8 @@
 # Released under the MIT License.
 # Copyright, 2025, by Samuel Williams.
 
-require 'protocol/http/middleware'
-require 'protocol/http/body/buffered'
+require "protocol/http/middleware"
+require "protocol/http/body/buffered"
 
 module Async
 	module HTTP
@@ -60,7 +60,7 @@ module Async
 					
 					# Read request body into array of chunks:
 					chunks = []
-					request.body.each { |chunk| chunks << chunk }
+					request.body.each {|chunk| chunks << chunk}
 					
 					# Create new request with buffered body:
 					Protocol::HTTP::Request.new(
@@ -82,7 +82,7 @@ module Async
 					if response.body && !response.body.empty?
 						# Read response body into buffered chunks:
 						chunks = []
-						response.body.each { |chunk| chunks << chunk }
+						response.body.each {|chunk| chunks << chunk}
 						
 						# Create response with captured body:
 						response_with_body = Protocol::HTTP::Response.new(
@@ -136,13 +136,13 @@ module Async
 						protocol: request.protocol
 					}
 					
-									# Add headers if present:
-				if request.headers && !request.headers.empty?
-					data[:headers] = {
-						fields: request.headers.fields,
-						tail: request.headers.tail
-					}
-				end
+					# Add headers if present:
+					if request.headers && !request.headers.empty?
+						data[:headers] = {
+							fields: request.headers.fields,
+							tail: request.headers.tail
+						}
+					end
 					
 					# Add body chunks if present:
 					if request.body && request.body.is_a?(Protocol::HTTP::Body::Buffered)
@@ -162,13 +162,13 @@ module Async
 						protocol: response.protocol
 					}
 					
-									# Add headers if present:
-				if response.headers && !response.headers.empty?
-					data[:headers] = {
-						fields: response.headers.fields,
-						tail: response.headers.tail
-					}
-				end
+					# Add headers if present:
+					if response.headers && !response.headers.empty?
+						data[:headers] = {
+							fields: response.headers.fields,
+							tail: response.headers.tail
+						}
+					end
 					
 					# Add body chunks if present:
 					if response.body && response.body.is_a?(Protocol::HTTP::Body::Buffered)

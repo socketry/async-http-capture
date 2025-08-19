@@ -3,8 +3,8 @@
 # Released under the MIT License.
 # Copyright, 2025, by Samuel Williams.
 
-require 'json'
-require 'time'
+require "json"
+require "time"
 
 module Async
 	module HTTP
@@ -49,7 +49,7 @@ module Async
 				# @raises [Errno::ENOENT] If the file does not exist.
 				def self.load(path)
 					data = JSON.parse(File.read(path), symbolize_names: true)
-					interactions = data[:interactions].map { |i| Interaction.new(i) }
+					interactions = data[:interactions].map {|i| Interaction.new(i)}
 					new(interactions)
 				end
 				

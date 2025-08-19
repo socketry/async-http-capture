@@ -1,6 +1,9 @@
 # frozen_string_literal: true
 
-require 'async/http/recorder'
+# Released under the MIT License.
+# Copyright, 2025, by Samuel Williams.
+
+require "async/http/recorder"
 
 describe Async::HTTP::Recorder do
 	it "has a version number" do
