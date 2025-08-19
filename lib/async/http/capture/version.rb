@@ -5,7 +5,7 @@
 
 module Async
 	module HTTP
-		module Recorder
+		module Capture
 			VERSION = "0.0.0"
 		end
 	end

@@ -3,14 +3,14 @@
 # Released under the MIT License.
 # Copyright, 2025, by Samuel Williams.
 
-require "async/http/recorder/middleware"
-require "async/http/recorder/cassette_store"
+require "async/http/capture/middleware"
+require "async/http/capture/cassette_store"
 require "protocol/http/request"
 require "protocol/http/response"
 require "protocol/http/body/buffered"
 require "tmpdir"
 
-describe Async::HTTP::Recorder::Middleware do
+describe Async::HTTP::Capture::Middleware do
 	around do |&block|
 		Dir.mktmpdir do |tmpdir|
 			@tmpdir = tmpdir
@@ -19,7 +19,7 @@ describe Async::HTTP::Recorder::Middleware do
 	end
 	
 	let(:cassette_path) {File.join(@tmpdir, "test_cassette")}
-	let(:cassette_store) {Async::HTTP::Recorder::CassetteStore.new(cassette_path)}
+	let(:cassette_store) {Async::HTTP::Capture::CassetteStore.new(cassette_path)}
 	
 	let(:simple_app) do
 		->(request) do
@@ -45,12 +45,8 @@ describe Async::HTTP::Recorder::Middleware do
 			expect(middleware).to be_a(subject)
 		end
 		
-		it "accepts optional parameters" do
-			middleware = subject.new(
-				simple_app,
-				store: cassette_store,
-				record_response: true
-			)
+		it "initializes with just required parameters" do
+			middleware = subject.new(simple_app, store: cassette_store)
 			
 			expect(middleware).to be_a(subject)
 		end
@@ -70,7 +66,7 @@ describe Async::HTTP::Recorder::Middleware do
 			]
 		end
 		
-		with "request-only recording (default)" do
+		with "complete interaction recording" do
 			let(:middleware) {subject.new(simple_app, store: cassette_store)}
 			
 			it "records GET requests without body" do
@@ -79,6 +75,11 @@ describe Async::HTTP::Recorder::Middleware do
 				# Verify the response is passed through:
 				expect(response.status).to be == 200
 				
+				# Consume the response body to trigger completion callbacks:
+				if response.body
+					response.body.each {|chunk|}
+				end
+				
 				# Verify the interaction was recorded:
 				expect(File).to be(:directory?, cassette_path)
 				
@@ -86,7 +87,7 @@ describe Async::HTTP::Recorder::Middleware do
 				json_files = Dir.glob(File.join(cassette_path, "*.json"))
 				expect(json_files).to have_attributes(length: be == 1)
 				
-				cassette = Async::HTTP::Recorder::Cassette.load(cassette_path)
+				cassette = Async::HTTP::Capture::Cassette.load(cassette_path)
 				expect(cassette.interactions).to have_attributes(length: be == 1)
 				
 				interaction = cassette.interactions.first
@@ -96,71 +97,79 @@ describe Async::HTTP::Recorder::Middleware do
 				expect(request_data[:headers][:fields]).to be == [["User-Agent", "Test"]]
 				expect(request_data[:headers][:tail]).to be_nil
 				
-				# No response should be recorded:
-				expect(interaction.to_h[:response]).to be_nil
+				# Response should now be recorded too:
+				response_data = interaction.to_h[:response]
+				expect(response_data[:status]).to be == 200
 			end
 			
 			it "records POST requests with body" do
-				response = middleware.call(post_request)
+				# Use echo_app which actually consumes the request body:
+				echo_middleware = subject.new(echo_app, store: cassette_store)
+				response = echo_middleware.call(post_request)
 				
 				expect(response.status).to be == 200
 				
-				cassette = Async::HTTP::Recorder::Cassette.load(cassette_path)
+				# The echo app consumes request body and returns it as response body
+				# Consume the response body to trigger completion callbacks:
+				if response.body
+					response.body.each {|chunk|}
+				end
+				
+				cassette = Async::HTTP::Capture::Cassette.load(cassette_path)
 				interaction = cassette.interactions.first
 				request_data = interaction.to_h[:request]
 				
 				expect(request_data[:method]).to be == "POST"
 				expect(request_data[:body]).to be == ['{"name": "John"}']
 				expect(request_data[:headers][:fields]).to be == [["Content-Type", "application/json"]]
-				expect(interaction.to_h[:response]).to be_nil
+				
+				# Response should now be recorded too:
+				response_data = interaction.to_h[:response]
+				expect(response_data[:status]).to be == 200
 			end
 		end
 		
-		with "request and response recording" do
+		with "async completion handling" do
 			let(:middleware) do
-				subject.new(simple_app, store: cassette_store, record_response: true)
+				subject.new(simple_app, store: cassette_store)
 			end
 			
-			it "records both request and response" do
+			it "waits for both request and response completion before recording" do
 				response = middleware.call(get_request)
 				
 				expect(response.status).to be == 200
 				
-				# Wait for any async body capture to complete:
+				# Consume response body to trigger completion:
 				if response.body
-					chunks = []
-					response.body.each {|chunk| chunks << chunk}
+					response.body.each {|chunk|}
 				end
 				
-				# Check if file exists and has content:
-				if File.exist?(cassette_path)
-					cassette = Async::HTTP::Recorder::Cassette.load(cassette_path)
-					interaction = cassette.interactions.first
-					
-					expect(interaction.to_h[:request][:method]).to be == "GET"
-					
-					# Response recording might be asynchronous, so it may not be immediately available:
-					response_data = interaction.to_h[:response]
-					if response_data
-						expect(response_data[:status]).to be == 200
-					end
-				end
+				# Both request and response should be recorded:
+				cassette = Async::HTTP::Capture::Cassette.load(cassette_path)
+				interaction = cassette.interactions.first
+				
+				expect(interaction.to_h[:request][:method]).to be == "GET"
+				expect(interaction.to_h[:response][:status]).to be == 200
 			end
 		end
 		
-		with "immediate saving" do
+		with "completion-based saving" do
 			let(:middleware) {subject.new(simple_app, store: cassette_store)}
 			
-			it "saves each interaction immediately" do
-				# First request should save immediately:
-				middleware.call(get_request)
-				expect(File).to be(:directory?, cassette_path)
+			it "saves each interaction after both sides complete" do
+				# First request with response body consumption:
+				response1 = middleware.call(get_request)
+				response1.body.each {|chunk|} if response1.body
 				
+				expect(File).to be(:directory?, cassette_path)
 				json_files = Dir.glob(File.join(cassette_path, "*.json"))
 				expect(json_files).to have_attributes(length: be == 1)
 				
-				# Second request should add another file:
-				middleware.call(post_request)
+				# Second request (different path for different content hash):
+				different_request = Protocol::HTTP::Request["GET", "/different", {"User-Agent" => "Test"}]
+				response2 = middleware.call(different_request)
+				response2.body.each {|chunk|} if response2.body
+				
 				json_files = Dir.glob(File.join(cassette_path, "*.json"))
 				expect(json_files).to have_attributes(length: be == 2)
 			end
@@ -174,6 +183,12 @@ describe Async::HTTP::Recorder::Middleware do
 			body_content = []
 			response.body.each {|chunk| body_content << chunk}
 			expect(body_content).to be == ['{"name": "John"}']
+			
+			# Verify that the interaction was recorded with both request and response:
+			cassette = Async::HTTP::Capture::Cassette.load(cassette_path)
+			interaction = cassette.interactions.first
+			expect(interaction.to_h[:request][:method]).to be == "POST"
+			expect(interaction.to_h[:response][:status]).to be == 200
 		end
 	end
 end

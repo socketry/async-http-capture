@@ -9,7 +9,7 @@ require "time"
 
 module Async
 	module HTTP
-		module Recorder
+		module Capture
 			# Store implementation that saves interactions to content-addressed files in a directory.
 			# 
 			# Each interaction is saved as a separate JSON file named by its content hash,

@@ -3,11 +3,11 @@
 # Released under the MIT License.
 # Copyright, 2025, by Samuel Williams.
 
-require "async/http/recorder/cassette"
-require "async/http/recorder/interaction"
+require "async/http/capture/cassette"
+require "async/http/capture/interaction"
 require "tmpdir"
 
-describe Async::HTTP::Recorder::Cassette do
+describe Async::HTTP::Capture::Cassette do
 	let(:sample_interaction_data) do
 		{
 			request: {
@@ -20,7 +20,7 @@ describe Async::HTTP::Recorder::Cassette do
 	end
 	
 	let(:sample_interaction) do
-		Async::HTTP::Recorder::Interaction.new(sample_interaction_data)
+		Async::HTTP::Capture::Interaction.new(sample_interaction_data)
 	end
 	
 	with "#initialize" do
@@ -28,14 +28,14 @@ describe Async::HTTP::Recorder::Cassette do
 			cassette = subject.new([sample_interaction])
 			
 			expect(cassette.interactions).to have_attributes(length: be == 1)
-			expect(cassette.interactions.first).to be_a(Async::HTTP::Recorder::Interaction)
+			expect(cassette.interactions.first).to be_a(Async::HTTP::Capture::Interaction)
 		end
 		
 		it "accepts an array of Interaction objects directly" do
 			cassette = subject.new([sample_interaction])
 			
 			expect(cassette.interactions).to have_attributes(length: be == 1)
-			expect(cassette.interactions.first).to be_a(Async::HTTP::Recorder::Interaction)
+			expect(cassette.interactions.first).to be_a(Async::HTTP::Capture::Interaction)
 		end
 		
 		it "creates an empty cassette by default" do
@@ -62,7 +62,7 @@ describe Async::HTTP::Recorder::Cassette do
 			end
 			
 			expect(interactions).to have_attributes(length: be == 1)
-			expect(interactions.first).to be_a(Async::HTTP::Recorder::Interaction)
+			expect(interactions.first).to be_a(Async::HTTP::Capture::Interaction)
 		end
 	end
 	
@@ -95,10 +95,10 @@ describe Async::HTTP::Recorder::Cassette do
 		end
 		
 		it "saves each interaction as a separate file using content hash" do
-			interaction1 = Async::HTTP::Recorder::Interaction.new({
+			interaction1 = Async::HTTP::Capture::Interaction.new({
 				request: { method: "GET", path: "/test1" }
 			})
-			interaction2 = Async::HTTP::Recorder::Interaction.new({
+			interaction2 = Async::HTTP::Capture::Interaction.new({
 				request: { method: "GET", path: "/test2" }
 			})
 			
@@ -134,10 +134,10 @@ describe Async::HTTP::Recorder::Cassette do
 		end
 		
 		it "supports select operation" do
-			get_interaction = Async::HTTP::Recorder::Interaction.new({
+			get_interaction = Async::HTTP::Capture::Interaction.new({
 				request: { method: "GET", path: "/test" }
 			})
-			post_interaction = Async::HTTP::Recorder::Interaction.new({
+			post_interaction = Async::HTTP::Capture::Interaction.new({
 				request: { method: "POST", path: "/create" }
 			})
 			

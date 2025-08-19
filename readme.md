@@ -1,8 +1,8 @@
-# Async::HTTP::Recorder
+# Async::HTTP::Capture
 
 A Ruby gem for recording and replaying HTTP requests using `Protocol::HTTP`. Features content-addressed storage, parallel-safe recording, and flexible store backends.
 
-[![Development Status](https://github.com/socketry/async-http-recorder/workflows/Test/badge.svg)](https://github.com/socketry/async-http-recorder/actions?workflow=Test)
+[![Development Status](https://github.com/socketry/async-http-capture/workflows/Test/badge.svg)](https://github.com/socketry/async-http-capture/actions?workflow=Test)
 
 ## Features
 
@@ -18,14 +18,14 @@ A Ruby gem for recording and replaying HTTP requests using `Protocol::HTTP`. Fea
 ### Basic Recording to Files
 
 ``` ruby
-require "async/http/recorder"
+require "async/http/capture"
 
 # Create a store that saves to content-addressed files:
-store = Async::HTTP::Recorder::CassetteStore.new("interactions")
+store = Async::HTTP::Capture::CassetteStore.new("interactions")
 
 # Create middleware:
 app = ->(request) { Protocol::HTTP::Response[200, {}, ["OK"]] }
-middleware = Async::HTTP::Recorder::Middleware.new(app, store: store)
+middleware = Async::HTTP::Capture::Middleware.new(app, store: store)
 
 # Record interactions:
 request = Protocol::HTTP::Request["GET", "/users"]
@@ -36,8 +36,8 @@ response = middleware.call(request)
 
 ``` ruby
 # Create a console store for debugging:
-console_store = Async::HTTP::Recorder::ConsoleStore.new
-middleware = Async::HTTP::Recorder::Middleware.new(app, store: console_store)
+console_store = Async::HTTP::Capture::ConsoleStore.new
+middleware = Async::HTTP::Capture::Middleware.new(app, store: console_store)
 
 # This will log interactions to console:
 middleware.call(request)
@@ -48,7 +48,7 @@ middleware.call(request)
 
 ``` ruby
 # Load recorded interactions:
-cassette = Async::HTTP::Recorder::Cassette.load("interactions")
+cassette = Async::HTTP::Capture::Cassette.load("interactions")
 
 # Replay them:
 cassette.each do |interaction|
@@ -61,7 +61,7 @@ end
 
 ``` ruby
 # Record both requests and responses:
-middleware = Async::HTTP::Recorder::Middleware.new(
+middleware = Async::HTTP::Capture::Middleware.new(
   app, 
   store: store,
   record_response: true
@@ -112,7 +112,7 @@ Implement the `Store` interface:
 
 ``` ruby
 class MyStore
-  include Async::HTTP::Recorder::Store
+  include Async::HTTP::Capture::Store
   
   def call(interaction)
     # Handle the interaction as needed

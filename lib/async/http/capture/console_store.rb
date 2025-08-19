@@ -8,7 +8,7 @@ require "json"
 
 module Async
 	module HTTP
-		module Recorder
+		module Capture
 			# Store implementation that logs interactions to the console.
 			# 
 			# This store outputs complete interaction data via the Console gem,

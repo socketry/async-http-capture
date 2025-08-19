@@ -3,11 +3,11 @@
 # Released under the MIT License.
 # Copyright, 2025, by Samuel Williams.
 
-require "async/http/recorder"
+require "async/http/capture"
 
-describe Async::HTTP::Recorder do
+describe Async::HTTP::Capture do
 	it "has a version number" do
-		expect(Async::HTTP::Recorder::VERSION).to be =~ /^\d+\.\d+\.\d+$/
+		expect(Async::HTTP::Capture::VERSION).to be =~ /^\d+\.\d+\.\d+$/
 	end
 	
 	it "provides a working integration" do
@@ -21,7 +21,7 @@ describe Async::HTTP::Recorder do
 			}
 		}
 		
-		interaction = Async::HTTP::Recorder::Interaction.new(interaction_data)
+		interaction = Async::HTTP::Capture::Interaction.new(interaction_data)
 		request = interaction.request
 		
 		expect(request).to be_a(Protocol::HTTP::Request)

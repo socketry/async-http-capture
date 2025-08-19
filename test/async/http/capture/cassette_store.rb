@@ -3,14 +3,14 @@
 # Released under the MIT License.
 # Copyright, 2025, by Samuel Williams.
 
-require "async/http/recorder/cassette_store"
-require "async/http/recorder/interaction"
+require "async/http/capture/cassette_store"
+require "async/http/capture/interaction"
 require "protocol/http/request"
 require "protocol/http/response"
 require "protocol/http/body/buffered"
 require "tmpdir"
 
-describe Async::HTTP::Recorder::CassetteStore do
+describe Async::HTTP::Capture::CassetteStore do
 	around do |&block|
 		Dir.mktmpdir do |tmpdir|
 			@tmpdir = tmpdir
@@ -40,7 +40,7 @@ describe Async::HTTP::Recorder::CassetteStore do
 	
 	with "#call" do
 		it "saves request-only interactions to content-addressed files" do
-			interaction = Async::HTTP::Recorder::Interaction.new({}, request: simple_request)
+			interaction = Async::HTTP::Capture::Interaction.new({}, request: simple_request)
 			
 			store.call(interaction)
 			
@@ -58,7 +58,7 @@ describe Async::HTTP::Recorder::CassetteStore do
 		end
 		
 		it "saves request and response interactions" do
-			interaction = Async::HTTP::Recorder::Interaction.new(
+			interaction = Async::HTTP::Capture::Interaction.new(
 				{},
 				request: simple_request,
 				response: simple_response
@@ -74,7 +74,7 @@ describe Async::HTTP::Recorder::CassetteStore do
 		end
 		
 		it "saves interactions with errors" do
-			interaction = Async::HTTP::Recorder::Interaction.new(
+			interaction = Async::HTTP::Capture::Interaction.new(
 				{ error: "Connection broken" },
 				request: simple_request
 			)
@@ -88,8 +88,8 @@ describe Async::HTTP::Recorder::CassetteStore do
 		end
 		
 		it "stores identical interactions with different timestamps" do
-			interaction1 = Async::HTTP::Recorder::Interaction.new({}, request: simple_request)
-			interaction2 = Async::HTTP::Recorder::Interaction.new({}, request: simple_request)
+			interaction1 = Async::HTTP::Capture::Interaction.new({}, request: simple_request)
+			interaction2 = Async::HTTP::Capture::Interaction.new({}, request: simple_request)
 			
 			store.call(interaction1)
 			
@@ -116,8 +116,8 @@ describe Async::HTTP::Recorder::CassetteStore do
 			request1 = Protocol::HTTP::Request["GET", "/test1"]
 			request2 = Protocol::HTTP::Request["GET", "/test2"]
 			
-			interaction1 = Async::HTTP::Recorder::Interaction.new({}, request: request1)
-			interaction2 = Async::HTTP::Recorder::Interaction.new({}, request: request2)
+			interaction1 = Async::HTTP::Capture::Interaction.new({}, request: request1)
+			interaction2 = Async::HTTP::Capture::Interaction.new({}, request: request2)
 			
 			store.call(interaction1)
 			store.call(interaction2)

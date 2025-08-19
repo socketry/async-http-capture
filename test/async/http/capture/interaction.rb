@@ -3,9 +3,9 @@
 # Released under the MIT License.
 # Copyright, 2025, by Samuel Williams.
 
-require "async/http/recorder/interaction"
+require "async/http/capture/interaction"
 
-describe Async::HTTP::Recorder::Interaction do
+describe Async::HTTP::Capture::Interaction do
 	let(:simple_request_data) do
 		{
 			request: {

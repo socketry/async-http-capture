@@ -12,7 +12,7 @@ require "protocol/http/body/buffered"
 
 module Async
 	module HTTP
-		module Recorder
+		module Capture
 			# Represents a single HTTP interaction containing request and optional response data.
 			# 
 			# This class serves as a simple data container that stores the raw interaction data
@@ -115,7 +115,7 @@ module Async
 					end
 					
 					# Add body chunks if present:
-					if request.body && request.body.is_a?(Protocol::HTTP::Body::Buffered)
+					if request.body && request.body.is_a?(::Protocol::HTTP::Body::Buffered)
 						data[:body] = request.body.chunks
 					end
 					
@@ -141,7 +141,7 @@ module Async
 					end
 					
 					# Add body chunks if present:
-					if response.body && response.body.is_a?(Protocol::HTTP::Body::Buffered)
+					if response.body && response.body.is_a?(::Protocol::HTTP::Body::Buffered)
 						data[:body] = response.body.chunks
 					end
 					
@@ -175,10 +175,10 @@ module Async
 				# @parameter protocol [String | Array | Nil] The protocol information.
 				# @returns [Protocol::HTTP::Request] The constructed request object.
 				def build_request(scheme: nil, authority: nil, method:, path:, version: nil, headers: nil, body: nil, protocol: nil)
-					body = Protocol::HTTP::Body::Buffered.wrap(body) if body
+					body = ::Protocol::HTTP::Body::Buffered.wrap(body) if body
 					headers = build_headers(headers) if headers
 					
-					Protocol::HTTP::Request.new(
+					::Protocol::HTTP::Request.new(
 						scheme,
 						authority,
 						method, 
@@ -198,10 +198,10 @@ module Async
 				# @parameter protocol [String | Array | Nil] The protocol information.
 				# @returns [Protocol::HTTP::Response] The constructed response object.
 				def build_response(version: nil, status:, headers: nil, body: nil, protocol: nil)
-					body = Protocol::HTTP::Body::Buffered.wrap(body) if body
+					body = ::Protocol::HTTP::Body::Buffered.wrap(body) if body
 					headers = build_headers(headers) if headers
 					
-					Protocol::HTTP::Response.new(
+					::Protocol::HTTP::Response.new(
 						version,
 						status,
 						headers,
@@ -220,16 +220,16 @@ module Async
 						if headers_data.key?(:fields) || headers_data.key?("fields")
 							fields = headers_data[:fields] || headers_data["fields"]
 							tail = headers_data[:tail] || headers_data["tail"]
-							Protocol::HTTP::Headers.new(fields, tail)
+							::Protocol::HTTP::Headers.new(fields, tail)
 						else
 							# Simple hash format:
-							Protocol::HTTP::Headers[headers_data]
+							::Protocol::HTTP::Headers[headers_data]
 						end
 					when Array
 						# Array format of [name, value] pairs:
-						Protocol::HTTP::Headers[headers_data]
+						::Protocol::HTTP::Headers[headers_data]
 					else
-						Protocol::HTTP::Headers[headers_data]
+						::Protocol::HTTP::Headers[headers_data]
 					end
 				end
 			end

@@ -3,13 +3,13 @@
 # Released under the MIT License.
 # Copyright, 2025, by Samuel Williams.
 
-require "async/http/recorder/console_store"
-require "async/http/recorder/interaction"
+require "async/http/capture/console_store"
+require "async/http/capture/interaction"
 require "protocol/http/request"
 require "protocol/http/response"
 require "sus/fixtures/console/captured_logger"
 
-describe Async::HTTP::Recorder::ConsoleStore do
+describe Async::HTTP::Capture::ConsoleStore do
 	include_context Sus::Fixtures::Console::CapturedLogger
 	
 	let(:simple_request) do
@@ -23,7 +23,7 @@ describe Async::HTTP::Recorder::ConsoleStore do
 	with "#call" do
 		it "logs request-only interactions with full data" do
 			store = subject.new
-			interaction = Async::HTTP::Recorder::Interaction.new({}, request: simple_request)
+			interaction = Async::HTTP::Capture::Interaction.new({}, request: simple_request)
 			
 			store.call(interaction)
 			
@@ -52,7 +52,7 @@ describe Async::HTTP::Recorder::ConsoleStore do
 		
 		it "logs request-response interactions with full data" do
 			store = subject.new
-			interaction = Async::HTTP::Recorder::Interaction.new(
+			interaction = Async::HTTP::Capture::Interaction.new(
 				{},
 				request: simple_request,
 				response: simple_response
@@ -84,7 +84,7 @@ describe Async::HTTP::Recorder::ConsoleStore do
 		
 		it "logs error interactions with full data" do
 			store = subject.new
-			interaction = Async::HTTP::Recorder::Interaction.new(
+			interaction = Async::HTTP::Capture::Interaction.new(
 				{ error: "EPIPE: Broken pipe" },
 				request: simple_request
 			)
@@ -115,7 +115,7 @@ describe Async::HTTP::Recorder::ConsoleStore do
 		
 		it "outputs parseable JSON that can recreate interactions" do
 			store = subject.new
-			interaction = Async::HTTP::Recorder::Interaction.new(
+			interaction = Async::HTTP::Capture::Interaction.new(
 				{ error: "Connection timeout" },
 				request: simple_request,
 				response: simple_response
@@ -131,7 +131,7 @@ describe Async::HTTP::Recorder::ConsoleStore do
 			
 			# Should be able to recreate the interaction from logged JSON:
 			parsed_json = JSON.parse(json_string, symbolize_names: true)
-			recreated_interaction = Async::HTTP::Recorder::Interaction.new(parsed_json)
+			recreated_interaction = Async::HTTP::Capture::Interaction.new(parsed_json)
 			
 			expect(recreated_interaction.request.method).to be == "GET"
 			expect(recreated_interaction.response.status).to be == 200

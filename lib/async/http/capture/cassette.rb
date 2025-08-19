@@ -9,7 +9,7 @@ require "fileutils"
 
 module Async
 	module HTTP
-		module Recorder
+		module Capture
 			# Represents a collection of HTTP interactions using content-addressed storage.
 			# 
 			# A cassette serves as a container for multiple {Interaction} objects, storing each
