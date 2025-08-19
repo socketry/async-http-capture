@@ -29,6 +29,11 @@ module Async
 				# @parameter request [Protocol::HTTP::Request] The incoming HTTP request.
 				# @returns [Protocol::HTTP::Response] The response from the next middleware.
 				def call(request)
+					# Check if we should capture this request:
+					unless capture?(request)
+						return super(request)
+					end
+					
 					# Create completion tracker for this interaction:
 					tracker = create_interaction_tracker(request)
 					
@@ -40,6 +45,14 @@ module Async
 					
 					# Capture response body with completion tracking:
 					capture_response_with_completion(captured_request, response, tracker)
+				end
+				
+				# Determine whether to capture the given request.
+				# Override this method in subclasses to implement custom filtering logic.
+				# @parameter request [Protocol::HTTP::Request] The incoming HTTP request.
+				# @returns [Boolean] True if the request should be captured, false otherwise.
+				def capture?(request)
+					true
 				end
 				
 				private

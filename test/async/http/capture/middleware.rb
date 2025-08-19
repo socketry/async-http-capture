@@ -191,4 +191,82 @@ describe Async::HTTP::Capture::Middleware do
 			expect(interaction.to_h[:response][:status]).to be == 200
 		end
 	end
+	
+	with "#capture?" do
+		let(:get_request) do
+			Protocol::HTTP::Request["GET", "/test", {"User-Agent" => "Test"}]
+		end
+		
+		let(:post_request) do
+			Protocol::HTTP::Request[
+				"POST",
+				"/users",
+				{"Content-Type" => "application/json"},
+				['{"name": "John"}']
+			]
+		end
+		
+		let(:selective_middleware) do
+			Class.new(subject) do
+				def initialize(app, store:)
+					super(app, store: store)
+					@captured_requests = []
+				end
+				
+				# Custom filtering logic: only capture GET requests
+				def capture?(request)
+					request.method == "GET"
+				end
+			end
+		end
+		
+		it "defaults to true for base middleware" do
+			middleware = subject.new(simple_app, store: cassette_store)
+			expect(middleware.capture?(get_request)).to be == true
+			expect(middleware.capture?(post_request)).to be == true
+		end
+		
+		it "can be overridden to filter requests" do
+			middleware = selective_middleware.new(simple_app, store: cassette_store)
+			expect(middleware.capture?(get_request)).to be == true
+			expect(middleware.capture?(post_request)).to be == false
+		end
+		
+		it "skips capturing when capture? returns false" do
+			middleware = selective_middleware.new(simple_app, store: cassette_store)
+			
+			# Make a POST request - should not be captured
+			response = middleware.call(post_request)
+			response.body.each {|chunk|} if response.body # Consume body
+			
+			# Verify no interactions were recorded:
+			expect(File).not.to be(:directory?, cassette_path)
+			
+			# Make a GET request - should be captured
+			response = middleware.call(get_request)
+			response.body.each {|chunk|} if response.body # Consume body
+			
+			# Verify one interaction was recorded:
+			expect(File).to be(:directory?, cassette_path)
+			cassette = Async::HTTP::Capture::Cassette.load(cassette_path)
+			expect(cassette.interactions).to have_attributes(length: be == 1)
+			expect(cassette.interactions.first.to_h[:request][:method]).to be == "GET"
+		end
+		
+		it "still processes requests normally when not capturing" do
+			middleware = selective_middleware.new(echo_app, store: cassette_store)
+			
+			# POST request should not be captured but should still work normally
+			response = middleware.call(post_request)
+			
+			# Echo app should still return the request body:
+			body_content = []
+			response.body.each {|chunk| body_content << chunk}
+			expect(body_content).to be == ['{"name": "John"}']
+			expect(response.status).to be == 200
+			
+			# But no interaction should be recorded:
+			expect(File).not.to be(:directory?, cassette_path)
+		end
+	end
 end
