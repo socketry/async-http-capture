@@ -90,6 +90,37 @@ module Async
 					
 					data
 				end
+			
+				# Provide a reasonable string representation of this interaction.
+				# @returns [String] A human-readable description of the interaction.
+				def to_s
+					parts = []
+					
+					# Add request information
+					if request_data = @data[:request]
+						method = request_data[:method] || "?"
+						path = request_data[:path] || "/"
+						parts << "#{method} #{path}"
+					end
+					
+					# Add response status if available
+					if response_data = @data[:response]
+						status = response_data[:status]
+						parts << "-> #{status}" if status
+					end
+					
+					# Add error if present
+					if error_data = @data[:error]
+						parts << "(ERROR: #{error_data})"
+					end
+					
+					# Add timestamp if available
+					if timestamp = @data[:timestamp]
+						parts << "[#{timestamp}]"
+					end
+					
+					parts.join(" ")
+				end
 				
 				private
 				

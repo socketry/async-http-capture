@@ -3,14 +3,14 @@
 require_relative "lib/async/http/capture/version"
 
 Gem::Specification.new do |spec|
-	spec.name = "async-http"
+	spec.name = "async-http-capture"
 	spec.version = Async::HTTP::Capture::VERSION
 	
 	spec.summary = "A HTTP request and response capture."
 	spec.authors = ["Samuel Williams"]
 	spec.license = "MIT"
 	
-	spec.homepage = "https://github.com/socketry/async-http"
+	spec.homepage = "https://github.com/socketry/async-http-capture"
 	
 	spec.metadata = {
 		"documentation_uri" => "https://socketry.github.io/async-http-capture/",

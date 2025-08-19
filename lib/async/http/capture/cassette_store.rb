@@ -7,6 +7,8 @@ require "fileutils"
 require "json"
 require "time"
 
+require_relative "cassette"
+
 module Async
 	module HTTP
 		module Capture
@@ -19,6 +21,10 @@ module Async
 				# @parameter directory_path [String] The directory path where interactions should be saved.
 				def initialize(directory_path)
 					@directory_path = directory_path
+				end
+				
+				def cassette
+					Cassette.load(@directory_path)
 				end
 				
 				# Save an interaction to a content-addressed file with timestamp prefix.
