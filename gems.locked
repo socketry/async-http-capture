@@ -40,7 +40,7 @@ GEM
       samovar (~> 2.1)
     bake-gem (0.11.1)
       console (~> 1.25)
-    bake-modernize (0.40.0)
+    bake-modernize (0.41.0)
       async-http
       bake
       build-files (~> 1.6)
@@ -133,7 +133,7 @@ GEM
     prettyprint (0.2.0)
     prism (1.4.0)
     protocol-hpack (1.5.1)
-    protocol-http (0.51.1)
+    protocol-http (0.52.0)
     protocol-http1 (0.34.1)
       protocol-http (~> 0.22)
     protocol-http2 (0.22.1)
@@ -175,7 +175,7 @@ GEM
     rubocop-ast (1.46.0)
       parser (>= 3.3.7.2)
       prism (~> 1.4)
-    rubocop-socketry (0.2.0)
+    rubocop-socketry (0.2.2)
       lint_roller
       rubocop (>= 1.72)
     ruby-progressbar (1.13.0)
