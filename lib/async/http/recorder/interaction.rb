@@ -3,6 +3,8 @@
 # Released under the MIT License.
 # Copyright, 2025, by Samuel Williams.
 
+require "digest/sha2"
+require "json"
 require "protocol/http/request"
 require "protocol/http/response"
 require "protocol/http/headers"
@@ -15,24 +17,35 @@ module Async
 			# 
 			# This class serves as a simple data container that stores the raw interaction data
 			# and provides factory methods to construct {Protocol::HTTP::Request} and 
-			# {Protocol::HTTP::Response} objects on demand.
+			# {Protocol::HTTP::Response} objects on demand. May also contain error information
+			# if the interaction failed.
 			class Interaction
 				# Initialize a new interaction with the provided data.
-				# @parameter data [Hash] The interaction data containing request and optional response information.
-				def initialize(data)
+				# @parameter data [Hash] The interaction data containing serialized request and optional response information.
+				# @parameter request [Protocol::HTTP::Request | Nil] A pre-constructed request object.
+				# @parameter response [Protocol::HTTP::Response | Nil] A pre-constructed response object.
+				def initialize(data, request: nil, response: nil)
 					@data = data
+					@request = request
+					@response = response
 				end
 				
-				# Get the Protocol::HTTP::Request object, constructing it lazily on first access.
-				# @returns [Protocol::HTTP::Request | Nil] The constructed request object, or nil if no request data is present.
+				# Get the Protocol::HTTP::Request object, constructing it lazily if not already provided.
+				# @returns [Protocol::HTTP::Request | Nil] The request object, or nil if no request data is present.
 				def request
-					@request ||= make_request if @data[:request]
+					@request ||= make_request
 				end
 				
-				# Get the Protocol::HTTP::Response object, constructing it lazily on first access.
-				# @returns [Protocol::HTTP::Response | Nil] The constructed response object, or nil if no response data is present.
+				# Get the Protocol::HTTP::Response object, constructing it lazily if not already provided.
+				# @returns [Protocol::HTTP::Response | Nil] The response object, or nil if no response data is present.
 				def response
-					@response ||= make_response if @data[:response]
+					@response ||= make_response
+				end
+				
+				# Get any error that occurred during the interaction.
+				# @returns [Exception | String | Nil] The error information, or nil if no error occurred.
+				def error
+					@data[:error]
 				end
 				
 				# Convert the interaction to a hash representation.
@@ -48,18 +61,107 @@ module Async
 					new(hash)
 				end
 				
+				# Generate a content-addressed hash for this interaction.
+				# This hash can be used as a unique filename for content-addressed storage.
+				# @returns [String] A 16-character hexadecimal hash of the interaction content.
+				def content_hash
+					# Create a consistent JSON representation for hashing:
+					json_string = JSON.generate(serialize, sort_keys: true)
+					Digest::SHA256.hexdigest(json_string)[0, 16]
+				end
+				
+				# Serialize the interaction to a data format suitable for storage or hashing.
+				# Converts Protocol::HTTP objects to plain data structures.
+				# @returns [Hash] The serialized interaction data.
+				def serialize
+					data = @data.dup
+					
+					if request_obj = self.request
+						data[:request] = serialize_request(request_obj)
+					end
+					
+					if response_obj = self.response  
+						data[:response] = serialize_response(response_obj)
+					end
+					
+					if error = self.error
+						data[:error] = error.is_a?(Exception) ? error.message : error.to_s
+					end
+					
+					data
+				end
+				
 				private
+				
+				# Serialize a Protocol::HTTP::Request to a hash.
+				# @parameter request [Protocol::HTTP::Request] The request to serialize.
+				# @returns [Hash] The serialized request data.
+				def serialize_request(request)
+					data = {
+						scheme: request.scheme,
+						authority: request.authority,
+						method: request.method,
+						path: request.path,
+						version: request.version,
+						protocol: request.protocol
+					}
+					
+					# Add headers if present:
+					if request.headers && !request.headers.empty?
+						data[:headers] = {
+							fields: request.headers.fields,
+							tail: request.headers.tail
+						}
+					end
+					
+					# Add body chunks if present:
+					if request.body && request.body.is_a?(Protocol::HTTP::Body::Buffered)
+						data[:body] = request.body.chunks
+					end
+					
+					data
+				end
+				
+				# Serialize a Protocol::HTTP::Response to a hash.
+				# @parameter response [Protocol::HTTP::Response] The response to serialize.
+				# @returns [Hash] The serialized response data.
+				def serialize_response(response)
+					data = {
+						version: response.version,
+						status: response.status,
+						protocol: response.protocol
+					}
+					
+					# Add headers if present:
+					if response.headers && !response.headers.empty?
+						data[:headers] = {
+							fields: response.headers.fields,
+							tail: response.headers.tail
+						}
+					end
+					
+					# Add body chunks if present:
+					if response.body && response.body.is_a?(Protocol::HTTP::Body::Buffered)
+						data[:body] = response.body.chunks
+					end
+					
+					data
+				end
 				
 				# Create a Protocol::HTTP::Request from the stored request data.
 				# @returns [Protocol::HTTP::Request] The constructed request object.
 				def make_request
-					build_request(**@data[:request])
+					if request_data = @data[:request]
+						build_request(**request_data)
+					end
 				end
 				
 				# Create a Protocol::HTTP::Response from the stored response data.
 				# @returns [Protocol::HTTP::Response] The constructed response object.
 				def make_response
-					build_response(**@data[:response])
+					if response_data = @data[:response]
+						build_response(**response_data)
+					end
 				end
 				
 				# Build a Protocol::HTTP::Request from the provided parameters.
@@ -114,17 +216,17 @@ module Async
 				def build_headers(headers_data)
 					case headers_data
 					when Hash
-						# New format with fields and tail for complete round-trip:
+						# Hash format with fields and tail for complete header reconstruction:
 						if headers_data.key?(:fields) || headers_data.key?("fields")
 							fields = headers_data[:fields] || headers_data["fields"]
 							tail = headers_data[:tail] || headers_data["tail"]
 							Protocol::HTTP::Headers.new(fields, tail)
 						else
-							# Fallback for old format:
+							# Simple hash format:
 							Protocol::HTTP::Headers[headers_data]
 						end
 					when Array
-						# Legacy array format:
+						# Array format of [name, value] pairs:
 						Protocol::HTTP::Headers[headers_data]
 					else
 						Protocol::HTTP::Headers[headers_data]

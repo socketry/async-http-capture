@@ -31,8 +31,8 @@ describe Async::HTTP::Recorder::Cassette do
 			expect(cassette.interactions.first).to be_a(Async::HTTP::Recorder::Interaction)
 		end
 		
-		it "accepts an array of hash objects" do
-			cassette = subject.new([sample_interaction_data])
+		it "accepts an array of Interaction objects directly" do
+			cassette = subject.new([sample_interaction])
 			
 			expect(cassette.interactions).to have_attributes(length: be == 1)
 			expect(cassette.interactions.first).to be_a(Async::HTTP::Recorder::Interaction)
@@ -44,10 +44,11 @@ describe Async::HTTP::Recorder::Cassette do
 			expect(cassette.interactions).to be(:empty?)
 		end
 		
-		it "raises an error for invalid interaction types" do
-			expect do
-				subject.new(["invalid"])
-			end.to raise_exception(ArgumentError, message: be(:include?, "Invalid interaction"))
+		it "stores whatever interactions are provided" do
+			# Constructor no longer validates - just stores what's given
+			cassette = subject.new(["anything"])
+			
+			expect(cassette.interactions).to be == ["anything"]
 		end
 	end
 	
@@ -73,15 +74,19 @@ describe Async::HTTP::Recorder::Cassette do
 			end
 		end
 		
-		let(:test_file_path) {File.join(@tmpdir, "test_cassette.json")}
+		let(:test_directory_path) {File.join(@tmpdir, "test_cassette")}
 		
-		it "saves and loads a cassette to/from JSON" do
+		it "saves and loads a cassette to/from directory" do
 			original_cassette = subject.new([sample_interaction])
-			original_cassette.save(test_file_path)
+			original_cassette.save(test_directory_path)
 			
-			expect(File).to be(:exist?, test_file_path)
+			expect(File).to be(:directory?, test_directory_path)
 			
-			loaded_cassette = subject.load(test_file_path)
+			# Check that interaction files were created:
+			json_files = Dir.glob(File.join(test_directory_path, "*.json"))
+			expect(json_files).to have_attributes(length: be == 1)
+			
+			loaded_cassette = subject.load(test_directory_path)
 			expect(loaded_cassette.interactions).to have_attributes(length: be == 1)
 			
 			# Verify the data round-tripped correctly:
@@ -89,20 +94,34 @@ describe Async::HTTP::Recorder::Cassette do
 			expect(loaded_interaction.to_h).to be == sample_interaction_data
 		end
 		
-		it "includes version and timestamp in saved file" do
-			cassette = subject.new([sample_interaction])
-			cassette.save(test_file_path)
+		it "saves each interaction as a separate file using content hash" do
+			interaction1 = Async::HTTP::Recorder::Interaction.new({
+				request: { method: "GET", path: "/test1" }
+			})
+			interaction2 = Async::HTTP::Recorder::Interaction.new({
+				request: { method: "GET", path: "/test2" }
+			})
 			
-			data = JSON.parse(File.read(test_file_path), symbolize_names: true)
-			expect(data[:version]).to be == "1.0"
-			expect(data[:recorded_at]).to be_a(String)
-			expect(data[:interactions]).to be_a(Array)
+			cassette = subject.new([interaction1, interaction2])
+			cassette.save(test_directory_path)
+			
+			# Check that two separate files were created:
+			json_files = Dir.glob(File.join(test_directory_path, "*.json"))
+			expect(json_files).to have_attributes(length: be == 2)
+			
+			# Check that files are named with content hashes:
+			expected_filename1 = "#{interaction1.content_hash}.json"
+			expected_filename2 = "#{interaction2.content_hash}.json"
+			
+			filenames = json_files.map {|path| File.basename(path)}
+			expect(filenames).to be(:include?, expected_filename1)
+			expect(filenames).to be(:include?, expected_filename2)
 		end
 		
-		it "raises an error when loading non-existent file" do
-			expect do
-				subject.load("/non/existent/path")
-			end.to raise_exception(Errno::ENOENT)
+		it "handles loading from non-existent directory" do
+			# Loading from a non-existent directory should return an empty cassette:
+			cassette = subject.load("/non/existent/path")
+			expect(cassette.interactions).to be(:empty?)
 		end
 	end
 	

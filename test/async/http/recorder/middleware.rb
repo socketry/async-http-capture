@@ -4,7 +4,7 @@
 # Copyright, 2025, by Samuel Williams.
 
 require "async/http/recorder/middleware"
-require "async/http/recorder/cassette"
+require "async/http/recorder/cassette_store"
 require "protocol/http/request"
 require "protocol/http/response"
 require "protocol/http/body/buffered"
@@ -18,7 +18,8 @@ describe Async::HTTP::Recorder::Middleware do
 		end
 	end
 	
-	let(:cassette_path) {File.join(@tmpdir, "test_cassette.json")}
+	let(:cassette_path) {File.join(@tmpdir, "test_cassette")}
+	let(:cassette_store) {Async::HTTP::Recorder::CassetteStore.new(cassette_path)}
 	
 	let(:simple_app) do
 		->(request) do
@@ -39,7 +40,7 @@ describe Async::HTTP::Recorder::Middleware do
 	
 	with "#initialize" do
 		it "initializes with required parameters" do
-			middleware = subject.new(simple_app, cassette_path: cassette_path)
+			middleware = subject.new(simple_app, store: cassette_store)
 			
 			expect(middleware).to be_a(subject)
 		end
@@ -47,9 +48,8 @@ describe Async::HTTP::Recorder::Middleware do
 		it "accepts optional parameters" do
 			middleware = subject.new(
 				simple_app,
-				cassette_path: cassette_path,
-				record_response: true,
-				batch_size: 5
+				store: cassette_store,
+				record_response: true
 			)
 			
 			expect(middleware).to be_a(subject)
@@ -71,7 +71,7 @@ describe Async::HTTP::Recorder::Middleware do
 		end
 		
 		with "request-only recording (default)" do
-			let(:middleware) {subject.new(simple_app, cassette_path: cassette_path)}
+			let(:middleware) {subject.new(simple_app, store: cassette_store)}
 			
 			it "records GET requests without body" do
 				response = middleware.call(get_request)
@@ -80,7 +80,11 @@ describe Async::HTTP::Recorder::Middleware do
 				expect(response.status).to be == 200
 				
 				# Verify the interaction was recorded:
-				expect(File).to be(:exist?, cassette_path)
+				expect(File).to be(:directory?, cassette_path)
+				
+				# Check that interaction files were created:
+				json_files = Dir.glob(File.join(cassette_path, "*.json"))
+				expect(json_files).to have_attributes(length: be == 1)
 				
 				cassette = Async::HTTP::Recorder::Cassette.load(cassette_path)
 				expect(cassette.interactions).to have_attributes(length: be == 1)
@@ -114,7 +118,7 @@ describe Async::HTTP::Recorder::Middleware do
 		
 		with "request and response recording" do
 			let(:middleware) do
-				subject.new(simple_app, cassette_path: cassette_path, record_response: true)
+				subject.new(simple_app, store: cassette_store, record_response: true)
 			end
 			
 			it "records both request and response" do
@@ -144,27 +148,26 @@ describe Async::HTTP::Recorder::Middleware do
 			end
 		end
 		
-		with "batch saving" do
-			let(:middleware) do
-				subject.new(simple_app, cassette_path: cassette_path, batch_size: 2)
-			end
+		with "immediate saving" do
+			let(:middleware) {subject.new(simple_app, store: cassette_store)}
 			
-			it "saves after reaching batch size" do
-				# First request should not save:
+			it "saves each interaction immediately" do
+				# First request should save immediately:
 				middleware.call(get_request)
-				expect(File).not.to be(:exist?, cassette_path)
+				expect(File).to be(:directory?, cassette_path)
 				
-				# Second request should trigger save:
+				json_files = Dir.glob(File.join(cassette_path, "*.json"))
+				expect(json_files).to have_attributes(length: be == 1)
+				
+				# Second request should add another file:
 				middleware.call(post_request)
-				expect(File).to be(:exist?, cassette_path)
-				
-				cassette = Async::HTTP::Recorder::Cassette.load(cassette_path)
-				expect(cassette.interactions).to have_attributes(length: be == 2)
+				json_files = Dir.glob(File.join(cassette_path, "*.json"))
+				expect(json_files).to have_attributes(length: be == 2)
 			end
 		end
 		
 		it "preserves request body for downstream middleware" do
-			middleware = subject.new(echo_app, cassette_path: cassette_path)
+			middleware = subject.new(echo_app, store: cassette_store)
 			response = middleware.call(post_request)
 			
 			# The echo app should receive the request body:

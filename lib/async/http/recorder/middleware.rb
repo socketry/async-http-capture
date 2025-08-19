@@ -5,28 +5,26 @@
 
 require "protocol/http/middleware"
 require "protocol/http/body/buffered"
+require "protocol/http/body/rewindable"
+require "protocol/http/body/completable"
 
 module Async
 	module HTTP
 		module Recorder
-			# Protocol::HTTP::Middleware for recording HTTP interactions to a cassette file.
+			# Protocol::HTTP::Middleware for recording HTTP interactions.
 			# 
-			# This middleware captures HTTP requests and optionally responses, storing them
-			# in a format that can be replayed later. By default, only requests are recorded,
-			# making it suitable for warmup scenarios.
+			# This middleware captures HTTP requests and optionally responses, then delegates
+			# storage to a provided store object. The middleware handles Protocol::HTTP object
+			# capture, while the store handles serialization, filtering, and persistence.
 			class Middleware < Protocol::HTTP::Middleware
 				# Initialize the recording middleware.
 				# @parameter app [Protocol::HTTP::Middleware] The next middleware in the chain.
-				# @parameter cassette_path [String] The path where recorded interactions should be saved.
+				# @parameter store [Object] An object that responds to #call(interaction) to handle recorded interactions.
 				# @parameter record_response [Boolean] Whether to record responses in addition to requests.
-				# @parameter **options [Hash] Additional options for recording behavior.
-				# @option batch_size [Integer] Number of interactions to accumulate before saving (default: 1).
-				def initialize(app, cassette_path:, record_response: false, **options)
+				def initialize(app, store:, record_response: false)
 					super(app)
-					@cassette_path = cassette_path
+					@store = store
 					@record_response = record_response
-					@interactions = []
-					@options = options
 				end
 				
 				# Process an HTTP request, capturing it and optionally the response.
@@ -63,7 +61,7 @@ module Async
 					request.body.each {|chunk| chunks << chunk}
 					
 					# Create new request with buffered body:
-					Protocol::HTTP::Request.new(
+					return Protocol::HTTP::Request.new(
 						request.scheme,
 						request.authority,
 						request.method,
@@ -76,118 +74,79 @@ module Async
 				end
 				
 				# Capture the response body and record the complete interaction.
+				# Uses non-blocking streaming capture to avoid interfering with response consumption.
 				# @parameter request [Protocol::HTTP::Request] The captured request.
 				# @parameter response [Protocol::HTTP::Response] The response to capture.
+				# @returns [Protocol::HTTP::Response] The wrapped response.
 				def capture_response_and_record(request, response)
 					if response.body && !response.body.empty?
-						# Read response body into buffered chunks:
-						chunks = []
-						response.body.each {|chunk| chunks << chunk}
-						
-						# Create response with captured body:
-						response_with_body = Protocol::HTTP::Response.new(
-							response.version,
-							response.status,
-							response.headers.dup,
-							Protocol::HTTP::Body::Buffered.new(chunks),
-							response.protocol
-						)
-						
-						# Record the interaction with captured body:
-						record_interaction(request, response_with_body)
-						
-						# Return original response:
-						response
+						# Use streaming capture to avoid blocking:
+						return wrap_response_body(request, response) do |response, body|
+							# body is the buffered content available after completion:
+							record_interaction(request, response, body)
+						end
 					else
 						# No response body, record immediately:
 						record_interaction(request, response)
-						response
+						return response
 					end
+				end
+				
+				# Wrap response body for non-blocking capture.
+				# @parameter request [Protocol::HTTP::Request] The request.
+				# @parameter response [Protocol::HTTP::Response] The response to wrap.
+				# @yields {|response, body| ...} Called when body capture is complete.
+				#   @parameter response [Protocol::HTTP::Response] The original response.
+				#   @parameter body [Protocol::HTTP::Body::Buffered] The captured body content.
+				# @returns [Protocol::HTTP::Response] The wrapped response.
+				def wrap_response_body(request, response, &block)
+					# Insert a rewindable body so that we can capture the response body:
+					rewindable = ::Protocol::HTTP::Body::Rewindable.wrap(response)
+					
+					# Wrap the response with the completion callback:
+					::Protocol::HTTP::Body::Completable.wrap(response) do |error|
+						if error
+							# Record interaction with error:
+							record_interaction(request, response, error: error)
+						else
+							# Record interaction with captured body:
+							yield response, rewindable.buffered
+						end
+					end
+					
+					return response
 				end
 				
 				# Record an interaction with the given request and optional response.
 				# @parameter request [Protocol::HTTP::Request] The request to record.
 				# @parameter response [Protocol::HTTP::Response | Nil] The optional response to record.
-				def record_interaction(request, response = nil)
-					# Convert Protocol::HTTP objects to serializable format:
-					interaction_data = {
-						request: serialize_request(request)
-					}
-					
-					if response
-						interaction_data[:response] = serialize_response(response)
+				# @parameter body [Protocol::HTTP::Body::Buffered | Nil] The captured response body, if any.
+				# @parameter error [Exception | Nil] Any error that occurred during the interaction.
+				def record_interaction(request, response = nil, body = nil, error: nil)
+					# Create response with captured body if provided:
+					final_response = response
+					if response && body
+						final_response = Protocol::HTTP::Response.new(
+							response.version,
+							response.status,
+							response.headers,
+							body,
+							response.protocol
+						)
 					end
 					
-					interaction = Interaction.new(interaction_data)
-					@interactions << interaction
-					save_cassette if should_save?
-				end
-				
-				# Serialize a Protocol::HTTP::Request to a hash.
-				# @parameter request [Protocol::HTTP::Request] The request to serialize.
-				# @returns [Hash] The serialized request data.
-				def serialize_request(request)
-					data = {
-						scheme: request.scheme,
-						authority: request.authority,
-						method: request.method,
-						path: request.path,
-						version: request.version,
-						protocol: request.protocol
-					}
+					# Create interaction with Protocol::HTTP objects and minimal data:
+					interaction_data = {}
+					interaction_data[:error] = error if error
 					
-					# Add headers if present:
-					if request.headers && !request.headers.empty?
-						data[:headers] = {
-							fields: request.headers.fields,
-							tail: request.headers.tail
-						}
-					end
+					interaction = Interaction.new(
+						interaction_data,
+						request: request,
+						response: final_response
+					)
 					
-					# Add body chunks if present:
-					if request.body && request.body.is_a?(Protocol::HTTP::Body::Buffered)
-						data[:body] = request.body.chunks
-					end
-					
-					data
-				end
-				
-				# Serialize a Protocol::HTTP::Response to a hash.
-				# @parameter response [Protocol::HTTP::Response] The response to serialize.
-				# @returns [Hash] The serialized response data.
-				def serialize_response(response)
-					data = {
-						version: response.version,
-						status: response.status,
-						protocol: response.protocol
-					}
-					
-					# Add headers if present:
-					if response.headers && !response.headers.empty?
-						data[:headers] = {
-							fields: response.headers.fields,
-							tail: response.headers.tail
-						}
-					end
-					
-					# Add body chunks if present:
-					if response.body && response.body.is_a?(Protocol::HTTP::Body::Buffered)
-						data[:body] = response.body.chunks
-					end
-					
-					data
-				end
-				
-				# Save the current interactions to the cassette file.
-				def save_cassette
-					cassette = Cassette.new(@interactions)
-					cassette.save(@cassette_path)
-				end
-				
-				# Determine if the cassette should be saved now.
-				# @returns [Boolean] True if the cassette should be saved.
-				def should_save?
-					@interactions.size >= (@options[:batch_size] || 1)
+					# Delegate to store:
+					@store.call(interaction)
 				end
 			end
 		end

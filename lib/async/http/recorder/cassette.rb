@@ -5,14 +5,17 @@
 
 require "json"
 require "time"
+require "fileutils"
 
 module Async
 	module HTTP
 		module Recorder
-			# Represents a collection of HTTP interactions that can be loaded from and saved to JSON files.
+			# Represents a collection of HTTP interactions using content-addressed storage.
 			# 
-			# A cassette serves as a container for multiple {Interaction} objects, providing functionality
-			# to serialize and deserialize interaction data to and from JSON format.
+			# A cassette serves as a container for multiple {Interaction} objects, storing each
+			# interaction as a separate JSON file in a directory. Files are named using the
+			# content hash of the interaction, providing automatic de-duplication and 
+			# parallel-safe recording.
 			class Cassette
 				include Enumerable
 				
@@ -20,19 +23,9 @@ module Async
 				attr_reader :interactions
 				
 				# Initialize a new cassette with the provided interactions.
-				# @parameter interactions [Array(Interaction | Hash)] The interactions to include in the cassette.
+				# @parameter interactions [Array(Interaction)] The interactions to include in the cassette.
 				def initialize(interactions = [])
-					@interactions = interactions.map do |item|
-						case item
-						when Hash
-							Interaction.new(item)
-						when Interaction
-							item
-						else
-							raise ArgumentError, "Invalid interaction: #{item}"
-						end
-					end.freeze
-					freeze
+					@interactions = interactions
 				end
 				
 				# Iterate over each interaction in the cassette.
@@ -42,26 +35,33 @@ module Async
 					@interactions.each(&block)
 				end
 				
-				# Load a cassette from a JSON file.
-				# @parameter path [String] The path to the JSON file to load.
+				# Load a cassette from a directory of JSON interaction files.
+				# @parameter directory_path [String] The path to the directory containing JSON interaction files.
 				# @returns [Cassette] A new cassette instance with the loaded interactions.
-				# @raises [JSON::ParserError] If the file contains invalid JSON.
-				# @raises [Errno::ENOENT] If the file does not exist.
-				def self.load(path)
-					data = JSON.parse(File.read(path), symbolize_names: true)
-					interactions = data[:interactions].map {|i| Interaction.new(i)}
+				# @raises [JSON::ParserError] If any file contains invalid JSON.
+				def self.load(directory_path)
+					return new([]) unless File.directory?(directory_path)
+					
+					json_files = Dir.glob(File.join(directory_path, "*.json"))
+					interactions = json_files.map do |file_path|
+						data = JSON.parse(File.read(file_path), symbolize_names: true)
+						Interaction.new(data)
+					end
 					new(interactions)
 				end
 				
-				# Save the cassette to a JSON file.
-				# @parameter path [String] The path where the JSON file should be saved.
-				def save(path)
-					data = {
-						version: "1.0",
-						recorded_at: Time.now.iso8601,
-						interactions: interactions.map(&:to_h)
-					}
-					File.write(path, JSON.pretty_generate(data))
+				# Save the cassette to a directory using content-addressed storage.
+				# Each interaction is saved as a separate JSON file named by its content hash.
+				# This approach provides de-duplication and parallel-safe recording.
+				# @parameter directory_path [String] The path to the directory where interactions should be saved.
+				def save(directory_path)
+					FileUtils.mkdir_p(directory_path)
+					
+					@interactions.each do |interaction|
+						filename = "#{interaction.content_hash}.json"
+						file_path = File.join(directory_path, filename)
+						File.write(file_path, JSON.pretty_generate(interaction.to_h))
+					end
 				end
 			end
 		end

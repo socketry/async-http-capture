@@ -28,6 +28,7 @@ group :test do
 	gem "rubocop-socketry"
 	
 	gem "sus-fixtures-async"
+	gem "sus-fixtures-async-http"
 	gem "sus-fixtures-console"
 	
 	gem "bake-test"
