@@ -90,7 +90,7 @@ Each interaction is saved to a file named by its content hash:
 
     interactions/
     ├── a1b2c3d4e5f67890.json  # GET /users
-    ├── f67890a1b2c3d4e5.json  # POST /orders  
+    ├── f67890a1b2c3d4e5.json  # POST /orders
     └── 1234567890abcdef.json  # GET /health
 
 Benefits:

@@ -100,13 +100,13 @@ Each interaction is saved to a file named by its content hash, providing several
 ~~~ 
 interactions/
 ├── a1b2c3d4e5f67890.json  # GET /users
-├── f67890a1b2c3d4e5.json  # POST /orders  
+├── f67890a1b2c3d4e5.json  # POST /orders
 └── 1234567890abcdef.json  # GET /health
 ~~~
 
 Benefits:
 - **Automatic de-duplication**: Identical interactions → same filename
-- **Parallel-safe**: Multiple processes can write without conflicts  
+- **Parallel-safe**: Multiple processes can write without conflicts
 - **Content integrity**: Hash verifies file contents
 - **Git-friendly**: Stable filenames for version control
 
@@ -176,7 +176,7 @@ middleware = Async::HTTP::Capture::Middleware.new(app, store: custom_store)
 ## Key Features
 
 - **Pure Protocol::HTTP**: Works directly with Protocol::HTTP objects, no lossy conversions
-- **Content-Addressed Storage**: Each interaction saved as separate JSON file with content hash  
+- **Content-Addressed Storage**: Each interaction saved as separate JSON file with content hash
 - **Parallel-Safe**: Multiple processes can record simultaneously without conflicts
 - **Flexible Stores**: Pluggable storage backends (files, console logging, etc.)
 - **Complete Headers**: Full round-trip serialization including `fields` and `tail`

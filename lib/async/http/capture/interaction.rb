@@ -80,7 +80,7 @@ module Async
 						data[:request] = serialize_request(request_obj)
 					end
 					
-					if response_obj = self.response  
+					if response_obj = self.response
 						data[:response] = serialize_response(response_obj)
 					end
 					

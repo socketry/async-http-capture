@@ -1,0 +1,44 @@
+{
+  "request": {
+    "scheme": "http",
+    "authority": "localhost:9292",
+    "method": "GET",
+    "path": "/hello",
+    "version": "HTTP/1.1",
+    "protocol": null,
+    "headers": {
+      "fields": [
+        [
+          "User-Agent",
+          "curl/8.7.1"
+        ],
+        [
+          "Accept",
+          "*/*"
+        ]
+      ],
+      "tail": null
+    }
+  },
+  "response": {
+    "version": null,
+    "status": 200,
+    "protocol": null,
+    "headers": {
+      "fields": [
+        [
+          "content-type",
+          "text/plain"
+        ],
+        [
+          "vary",
+          "accept-encoding"
+        ]
+      ],
+      "tail": 2
+    },
+    "body": [
+      "Hello, World! 2025-08-21 10:54:06 +1200"
+    ]
+  }
+}

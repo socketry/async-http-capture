@@ -80,7 +80,7 @@ module Async
 						if request = interaction.request
 							begin
 								response = app.call(request)
-								response.finish if response.respond_to?(:finish)
+								response.finish
 							rescue => error
 								Console.warn(self, "Failed to replay interaction:", error)
 							end

@@ -1,7 +1,7 @@
 PATH
   remote: ../..
   specs:
-    async-http-capture (0.0.0)
+    async-http-capture (0.1.0)
       async-http (~> 0.90)
 
 GEM

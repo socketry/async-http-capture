@@ -124,7 +124,7 @@ cassette.each do |interaction|
 	# Your app handles the request normally (warming up caches, etc.)
 end
 
-# Manual cassette creation using data hashes  
+# Manual cassette creation using data hashes:
 interactions = [
 	Async::HTTP::Record::Interaction.new({
 		request: {
@@ -170,7 +170,7 @@ class Async::HTTP::Record::Middleware < Protocol::HTTP::Middleware
 		# Capture request body if present
 		captured_request = capture_request_body(request)
 		
-		# Get response from downstream middleware/app  
+		# Get response from downstream middleware/app
 		response = super(captured_request)
 		
 		if @record_response
@@ -480,11 +480,11 @@ For warmup scenarios where you only need requests:
 
 ## Implementation Strategy
 
-### Phase 1: Core Components  
+### Phase 1: Core Components
 - [ ] `Interaction` class as immutable data holder using Protocol::HTTP objects with bodies
 - [ ] `Cassette` class with JSON serialization and loading
 
-### Phase 2: Replay Integration  
+### Phase 2: Replay Integration
 - [ ] Simple replay by iterating through interactions and calling `app.call(request)`
 - [ ] No middleware needed - direct request sending to your application
 - [ ] Proper error handling during replay for robust warmup scenarios
@@ -585,7 +585,7 @@ end
 # Step 2: Use recorded interactions to warm up your application
 require "async/http/record"
 
-# Load recorded interactions  
+# Load recorded interactions
 cassette = Async::HTTP::Record::Cassette.load("interactions.json")
 
 # Your application
@@ -610,11 +610,11 @@ puts "Warmup complete! Starting server..."
 
 ### Simple Error Strategy
 - Missing cassette file: raise clear error with path
-- Invalid JSON: raise parsing error with line number  
+- Invalid JSON: raise parsing error with line number
 - Invalid request data: raise validation error
 - Keep error messages focused and actionable
 
-## Testing Strategy  
+## Testing Strategy
 
 ### Unit Tests
 ```ruby
@@ -724,13 +724,13 @@ Following async-http-cache's proven approach:
 - Use `Protocol::HTTP::Body::Completable` for completion callbacks
 - Use `Protocol::HTTP::Body::Buffered` for final storage as arrays of strings
 
-### 5. Simple Replay Pattern  
+### 5. Simple Replay Pattern
 No middleware needed for replay - just iterate through recorded interactions and call `app.call(request)` to warm up your application directly.
 
-### 6. Optional Response Recording  
+### 6. Optional Response Recording
 Responses are not recorded by default (`record_response: false`) since many use cases only need request recording for testing or mocking.
 
-### 7. JSON-Only Storage  
+### 7. JSON-Only Storage
 Simple, human-readable format that's easy to inspect and version control.
 
 ### 8. No Global State
@@ -760,7 +760,7 @@ All components are explicit about their dependencies and configuration.
 
 This design enables a clean workflow:
 
-1. **Recording**: Use `Middleware` with default `record_response: false` to capture requests during development/testing  
+1. **Recording**: Use `Middleware` with default `record_response: false` to capture requests during development/testing
 2. **Replay**: Simple iteration - `cassette.each { |interaction| app.call(interaction.request) }` with lazy Protocol::HTTP object construction
 3. **Lazy Construction**: `Interaction` stores data and builds Protocol::HTTP objects on first access via `request`/`response` methods
 4. **Leverages Existing APIs**: Uses `Protocol::HTTP::Body::Buffered.wrap()` and standard Protocol::HTTP constructors

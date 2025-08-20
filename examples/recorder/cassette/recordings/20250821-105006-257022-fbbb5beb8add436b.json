@@ -1,0 +1,40 @@
+{
+  "request": {
+    "scheme": "http",
+    "authority": "localhost:9292",
+    "method": "GET",
+    "path": "/hello",
+    "version": "HTTP/1.1",
+    "protocol": null,
+    "headers": {
+      "fields": [
+        [
+          "User-Agent",
+          "curl/8.7.1"
+        ],
+        [
+          "Accept",
+          "*/*"
+        ]
+      ],
+      "tail": null
+    }
+  },
+  "response": {
+    "version": null,
+    "status": 200,
+    "protocol": null,
+    "headers": {
+      "fields": [
+        [
+          "content-type",
+          "text/plain"
+        ]
+      ],
+      "tail": 1
+    },
+    "body": [
+      "Hello World!"
+    ]
+  }
+}

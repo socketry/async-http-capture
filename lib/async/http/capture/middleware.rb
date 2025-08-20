@@ -16,7 +16,7 @@ module Async
 			# 
 			# This middleware captures both HTTP requests and responses, waiting for both
 			# to be fully processed before recording the complete interaction.
-			class Middleware < Protocol::HTTP::Middleware
+			class Middleware < ::Protocol::HTTP::Middleware
 				# Initialize the recording middleware.
 				# @parameter app [Protocol::HTTP::Middleware] The next middleware in the chain.
 				# @parameter store [Object] An object that responds to #call(interaction) to handle recorded interactions.
