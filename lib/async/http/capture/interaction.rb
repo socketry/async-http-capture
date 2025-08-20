@@ -90,7 +90,7 @@ module Async
 					
 					data
 				end
-			
+				
 				# Provide a reasonable string representation of this interaction.
 				# @returns [String] A human-readable description of the interaction.
 				def to_s

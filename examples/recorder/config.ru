@@ -4,15 +4,15 @@
 # Simple Rack application demonstrating async-http-capture recording
 # This application provides several endpoints that generate different types of responses
 
-require 'json'
-require 'time'
+require "json"
+require "time"
 
 # Simple hello world application with multiple endpoints
 app = lambda do |env|
 	request = Rack::Request.new(env)
 	
 	case request.path_info
-	when '/'
+	when "/"
 		# Simple homepage
 		body = <<~HTML
 			<html>
@@ -39,25 +39,25 @@ app = lambda do |env|
 			</html>
 		HTML
 		
-		[200, {'Content-Type' => 'text/html'}, [body]]
+		[200, {"Content-Type" => "text/html"}, [body]]
 		
-	when '/hello'
+	when "/hello"
 		# Simple text response
-		[200, {'Content-Type' => 'text/plain'}, ["Hello, World! #{Time.now}"]]
+		[200, {"Content-Type" => "text/plain"}, ["Hello, World! #{Time.now}"]]
 		
-	when '/json'
+	when "/json"
 		# JSON response
 		data = {
 			message: "Hello from JSON API",
 			timestamp: Time.now.iso8601,
 			random: rand(1000)
 		}
-		[200, {'Content-Type' => 'application/json'}, [JSON.generate(data)]]
+		[200, {"Content-Type" => "application/json"}, [JSON.generate(data)]]
 		
-	when '/headers'
+	when "/headers"
 		# Show request headers
-		headers_info = env.select { |k, _| k.start_with?('HTTP_') }
-			.transform_keys { |k| k.sub('HTTP_', '').split('_').map(&:capitalize).join('-') }
+		headers_info = env.select {|k, _| k.start_with?("HTTP_")}
+			.transform_keys {|k| k.sub("HTTP_", "").split("_").map(&:capitalize).join("-")}
 		
 		response = {
 			method: request.request_method,
@@ -66,11 +66,11 @@ app = lambda do |env|
 			headers: headers_info
 		}
 		
-		[200, {'Content-Type' => 'application/json'}, [JSON.pretty_generate(response)]]
+		[200, {"Content-Type" => "application/json"}, [JSON.pretty_generate(response)]]
 		
-	when '/post'
+	when "/post"
 		# Handle POST requests
-		if request.request_method == 'POST'
+		if request.request_method == "POST"
 			# Read request body
 			body = request.body.read
 			
@@ -82,30 +82,30 @@ app = lambda do |env|
 				timestamp: Time.now.iso8601
 			}
 			
-			[200, {'Content-Type' => 'application/json'}, [JSON.pretty_generate(response)]]
+			[200, {"Content-Type" => "application/json"}, [JSON.pretty_generate(response)]]
 		else
-			[405, {'Content-Type' => 'text/plain'}, ['Method Not Allowed - Use POST']]
+			[405, {"Content-Type" => "text/plain"}, ["Method Not Allowed - Use POST"]]
 		end
 		
-	when '/error'
+	when "/error"
 		# Generate an error for testing error recording
 		raise "Intentional error for testing"
 		
-	when '/slow'
+	when "/slow"
 		# Simulate a slow response
 		sleep(1)
-		[200, {'Content-Type' => 'text/plain'}, ["Slow response after 1 second delay"]]
+		[200, {"Content-Type" => "text/plain"}, ["Slow response after 1 second delay"]]
 		
 	else
 		# 404 Not Found
-		[404, {'Content-Type' => 'text/plain'}, ['Not Found']]
+		[404, {"Content-Type" => "text/plain"}, ["Not Found"]]
 	end
 end
 
 # If running with plain rackup (not Falcon), we can add the middleware here
 # But when using Falcon with falcon.rb, the middleware is configured there
-if ENV['CAPTURE_ENABLED'] == 'true'
-	require 'async/http/capture'
+if ENV["CAPTURE_ENABLED"] == "true"
+	require "async/http/capture"
 	
 	# Create stores for recording
 	store = Async::HTTP::Capture::CassetteStore.new("recordings")
