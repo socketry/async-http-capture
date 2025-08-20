@@ -11,7 +11,9 @@ require_relative "capture/console_store"
 require_relative "capture/interaction_tracker"
 require_relative "capture/middleware"
 
+# @namespace
 module Async
+	# @namespace
 	module HTTP
 		# @namespace
 		module Capture

@@ -23,6 +23,7 @@ module Async
 					@directory_path = directory_path
 				end
 				
+				# @returns [Cassette] A cassette object representing the recorded interactions.
 				def cassette
 					Cassette.load(@directory_path)
 				end
