@@ -28,16 +28,35 @@ describe Async::HTTP::Capture::Environment do
 	let(:test_service) {test_service_class.new}
 	
 	with "default configuration methods" do
-		it "returns nil for capture_cassette_directory by default" do
-			expect(test_service.capture_cassette_directory).to be == nil
+		it "returns useful defaults for capture_cassette_directory" do
+			expect(test_service.capture_cassette_directory).to be == "cassette/warmup"
 		end
 		
-		it "returns nil for capture_recordings_directory by default" do
-			expect(test_service.capture_recordings_directory).to be == nil
+		it "returns useful defaults for capture_recordings_directory" do
+			expect(test_service.capture_recordings_directory).to be == "cassette/recordings"
 		end
 		
-		it "returns false for capture_console_logging by default" do
-			expect(test_service.capture_console_logging).to be == false
+		it "returns true for capture_console_logging by default" do
+			expect(test_service.capture_console_logging).to be == true
+		end
+	end
+	
+	with "with falcon environment integration" do
+		let(:falcon_service_class) do
+			Class.new do
+				include Falcon::Environment::Rack if defined?(Falcon::Environment::Rack)
+				include Async::HTTP::Capture::Environment
+			end
+		end
+		
+		let(:falcon_service) { falcon_service_class.new }
+		
+		it "works with Falcon environment providing defaults" do
+			skip "Falcon not available" unless defined?(Falcon::Environment::Rack)
+			
+			# When Falcon environment is included, it may provide defaults
+			expect(falcon_service.capture_cassette_directory).to be_a(String) if falcon_service.capture_cassette_directory
+			expect(falcon_service.capture_recordings_directory).to be_a(String) if falcon_service.capture_recordings_directory
 		end
 	end
 	
@@ -86,11 +105,12 @@ describe Async::HTTP::Capture::Environment do
 			}
 		end
 		
-		it "returns nil when no cassette directory is configured" do
+		it "returns nil when cassette directory doesn't exist (even with useful defaults)" do
+			# The default "cassette/warmup" directory doesn't exist in our test
 			expect(test_service.capture_cassette).to be == nil
 		end
 		
-		it "returns nil when cassette directory doesn't exist" do
+		it "returns nil when custom cassette directory doesn't exist" do
 			nonexistent_dir_class = Class.new do
 				include Async::HTTP::Capture::Environment
 				define_method(:capture_cassette_directory) {"/nonexistent"}
@@ -123,15 +143,18 @@ describe Async::HTTP::Capture::Environment do
 	with "#capture_recording_store" do
 		let(:recordings_dir) {File.join(@root, "recordings")}
 		
-		it "returns nil when no recording configuration is set" do
-			expect(test_service.capture_recording_store).to be == nil
+		it "returns combined store with useful defaults" do
+			# With useful defaults, both console logging and recordings directory are set
+			store = test_service.capture_recording_store
+			expect(store).to be_a(Proc)  # Combined store since both are enabled by default
 		end
 		
-		it "returns CassetteStore when only recordings directory is configured" do
+		it "returns CassetteStore when console logging is disabled" do
 			root = @root
 			recordings_only_class = Class.new do
 				include Async::HTTP::Capture::Environment
 				define_method(:capture_recordings_directory) {File.join(root, "recordings")}
+				define_method(:capture_console_logging) { false }  # Override default to disable console
 			end
 			service = recordings_only_class.new
 			
@@ -139,10 +162,11 @@ describe Async::HTTP::Capture::Environment do
 			expect(store).to be_a(Async::HTTP::Capture::CassetteStore)
 		end
 		
-		it "returns ConsoleStore when only console logging is enabled" do
+		it "returns ConsoleStore when recordings directory is disabled" do
 			console_only_class = Class.new do
 				include Async::HTTP::Capture::Environment
-				define_method(:capture_console_logging) {true}
+				define_method(:capture_recordings_directory) { nil }  # Override default to disable recordings
+				define_method(:capture_console_logging) { true }
 			end
 			service = console_only_class.new
 			

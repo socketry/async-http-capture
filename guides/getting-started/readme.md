@@ -47,7 +47,7 @@ middleware = Async::HTTP::Capture::Middleware.new(app, store: store)
 # Make requests - they will be automatically recorded:
 request = Protocol::HTTP::Request["GET", "/users"]
 response = middleware.call(request)
-# This creates a file like interactions/a1b2c3d4e5f67890.json
+# This creates a file like recordings/20250821-105406-271633-4b51df4bdd5089b1.json
 ~~~
 
 ### Recording with Console Output
@@ -97,13 +97,13 @@ response = middleware.call(request)
 
 ## Content-Addressed Storage
 
-Each interaction is saved to a file named by its content hash, providing several benefits:
+Each interaction is saved to a file named with timestamp and content hash, providing several benefits:
 
 ~~~ 
-interactions/
-├── a1b2c3d4e5f67890.json  # GET /users
-├── f67890a1b2c3d4e5.json  # POST /orders
-└── 1234567890abcdef.json  # GET /health
+recordings/
+├── 20250821-105406-271633-4b51df4bdd5089b1.json  # GET /users
+├── 20250821-105006-257022-fbbb5beb8add436b.json  # POST /orders
+└── 20250820-101234-567890-9876543210fedcba.json  # GET /health
 ~~~
 
 Benefits:

@@ -115,7 +115,7 @@ end
 
 ```ruby
 # Load recorded interactions and replay them (no middleware needed)
-cassette = Async::HTTP::Record::Cassette.load("interactions.json")
+cassette = Async::HTTP::Capture::Cassette.load("recordings")
 
 # Simple replay: interactions construct Protocol::HTTP objects lazily
 cassette.each do |interaction|
@@ -144,7 +144,7 @@ interactions = [
 ]
 
 cassette = Async::HTTP::Record::Cassette.new(interactions)
-cassette.save("interactions.json")
+cassette.save("recordings")
 ```
 
 ### Recording Middleware
@@ -539,7 +539,7 @@ cassette.save("warmup.json")
 require "async/http/record"
 
 # Load recorded interactions
-cassette = Async::HTTP::Record::Cassette.load("interactions.json")
+cassette = Async::HTTP::Capture::Cassette.load("recordings")
 
 # Your application
 app = MyApplication.new
@@ -569,7 +569,7 @@ require "async/http/record"
 endpoint = Async::HTTP::Endpoint.parse("https://api.example.com")
 recording_middleware = Async::HTTP::Record::Middleware.new(
 	nil,
-	cassette_path: "interactions.json"
+	cassette_path: "recordings"
 )
 
 client = Async::HTTP::Client.new(endpoint, middleware: [recording_middleware])
@@ -586,7 +586,7 @@ end
 require "async/http/record"
 
 # Load recorded interactions
-cassette = Async::HTTP::Record::Cassette.load("interactions.json")
+cassette = Async::HTTP::Capture::Cassette.load("recordings")
 
 # Your application
 app = MyApplication.new
