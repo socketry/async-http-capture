@@ -70,7 +70,10 @@ middleware.call(request)
 # Load recorded interactions:
 cassette = Async::HTTP::Capture::Cassette.load("interactions")
 
-# Replay them against your application:
+# Option 1: Use the built-in replay method for application warmup
+cassette.replay(app)
+
+# Option 2: Manual iteration for custom processing
 cassette.each do |interaction|
   request = interaction.request  # Lazy Protocol::HTTP::Request construction
   response = app.call(request)   # Send to your app
@@ -80,17 +83,16 @@ end
 
 ## Recording HTTP Requests and Responses
 
-By default, only requests are recorded. To capture responses as well:
+The middleware automatically records both requests and responses:
 
 ~~~ ruby
 middleware = Async::HTTP::Capture::Middleware.new(
   app, 
-  store: store,
-  record_response: true
+  store: store
 )
 
 response = middleware.call(request)
-# Both request and response are now recorded
+# Both request and response are recorded.
 ~~~
 
 ## Content-Addressed Storage

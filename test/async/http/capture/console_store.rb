@@ -17,7 +17,7 @@ describe Async::HTTP::Capture::ConsoleStore do
 	end
 	
 	let(:simple_response) do
-		Protocol::HTTP::Response[200, {"Content-Type" => "text/plain"}, ["Hello"]]
+		Protocol::HTTP::Response[200, {"content-type" => "text/plain"}, ["Hello"]]
 	end
 	
 	with "#call" do
@@ -136,6 +136,47 @@ describe Async::HTTP::Capture::ConsoleStore do
 			expect(recreated_interaction.request.method).to be == "GET"
 			expect(recreated_interaction.response.status).to be == 200
 			expect(recreated_interaction.error).to be == "Connection timeout"
+		end
+	end
+	
+	with "error handling in middleware context" do
+		require "async/http/capture/middleware"
+		require "protocol/http/body/buffered"
+		
+		let(:error_app) do
+			->(request) do
+				# Simulate an app that causes EPIPE during response body:
+				response_body = Class.new do
+					def each
+						yield "First chunk"
+						yield "Second chunk"
+						raise Errno::EPIPE, "Broken pipe during response"
+					end
+					
+					def empty?; false; end
+					def close; end
+				end.new
+				
+				Protocol::HTTP::Response[200, {"content-length" => "100"}, response_body]
+			end
+		end
+		
+		it "captures basic interactions without errors first" do
+			simple_app = ->(request) do
+				Protocol::HTTP::Response[200, {}, ["Simple response"]]
+			end
+			
+			middleware = Async::HTTP::Capture::Middleware.new(simple_app, store: subject.new)
+			request = Protocol::HTTP::Request["GET", "/test"]
+			
+			response = middleware.call(request)
+			response.body.each {|chunk|}  # Consume body to trigger completion
+			
+			# Should have logged the interaction:
+			expect(console_capture).not.to be(:empty?)
+			last_log = console_capture.last
+			expect(last_log[:severity]).to be == :info
+			expect(last_log[:arguments].first).to be(:include?, "GET /test -> 200")
 		end
 	end
 end

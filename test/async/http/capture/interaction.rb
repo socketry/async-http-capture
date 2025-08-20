@@ -25,7 +25,7 @@ describe Async::HTTP::Capture::Interaction do
 				scheme: "https",
 				authority: "example.com",
 				headers: {
-					fields: [["Content-Type", "application/json"], ["Accept", "application/json"]],
+					fields: [["content-type", "application/json"], ["accept", "application/json"]],
 					tail: nil
 				}
 			}
@@ -40,7 +40,7 @@ describe Async::HTTP::Capture::Interaction do
 				scheme: "https",
 				authority: "example.com",
 				headers: {
-					fields: [["Content-Type", "application/json"]],
+					fields: [["content-type", "application/json"]],
 					tail: nil
 				},
 				body: ['{"name": "John Doe"}']
@@ -59,7 +59,7 @@ describe Async::HTTP::Capture::Interaction do
 			response: {
 				status: 200,
 				headers: {
-					fields: [["Content-Type", "application/json"]],
+					fields: [["content-type", "application/json"]],
 					tail: nil
 				},
 				body: ['{"id": 123, "name": "John Doe"}']

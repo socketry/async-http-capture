@@ -12,30 +12,30 @@ require "tmpdir"
 
 describe Async::HTTP::Capture::CassetteStore do
 	around do |&block|
-		Dir.mktmpdir do |tmpdir|
-			@tmpdir = tmpdir
+		Dir.mktmpdir do |root|
+			@root = root
 			block.call
 		end
 	end
 	
-	let(:directory_path) {File.join(@tmpdir, "cassette")}
+	let(:directory_path) {File.join(@root, "cassette")}
 	let(:store) {subject.new(directory_path)}
 	
 	let(:simple_request) do
-		Protocol::HTTP::Request["GET", "/test", {"User-Agent" => "Test"}]
+		Protocol::HTTP::Request["GET", "/test", {"user-agent" => "Test"}]
 	end
 	
 	let(:request_with_body) do
 		Protocol::HTTP::Request[
 			"POST", 
 			"/users",
-			{"Content-Type" => "application/json"},
+			{"content-type" => "application/json"},
 			['{"name": "John"}']
 		]
 	end
 	
 	let(:simple_response) do
-		Protocol::HTTP::Response[200, {"Content-Type" => "text/plain"}, ["Hello"]]
+		Protocol::HTTP::Response[200, {"content-type" => "text/plain"}, ["Hello"]]
 	end
 	
 	with "#call" do

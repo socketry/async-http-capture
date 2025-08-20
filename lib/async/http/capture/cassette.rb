@@ -6,6 +6,7 @@
 require "json"
 require "time"
 require "fileutils"
+require "console"
 
 module Async
 	module HTTP
@@ -47,7 +48,8 @@ module Async
 						data = JSON.parse(File.read(file_path), symbolize_names: true)
 						Interaction.new(data)
 					end
-					new(interactions)
+					
+					return self.new(interactions)
 				end
 				
 				# Save the cassette to a directory using content-addressed storage.
@@ -62,6 +64,30 @@ module Async
 						file_path = File.join(directory_path, filename)
 						File.write(file_path, JSON.pretty_generate(interaction.to_h))
 					end
+				end
+				
+				# Replay all interactions against the provided application.
+				# This is useful for warming up applications by replaying recorded traffic.
+				# @parameter app [#call] The application to replay interactions against.
+				def replay(app)
+					count = @interactions.length
+					Console.info(self) {"Replaying #{count} interactions for warmup..."}
+					
+					@interactions.each do |interaction|
+						Console.debug(self, "Replaying interaction:", interaction)
+						
+						# Replay the interaction against the app:
+						if request = interaction.request
+							begin
+								response = app.call(request)
+								response.finish if response.respond_to?(:finish)
+							rescue => error
+								Console.warn(self, "Failed to replay interaction:", error)
+							end
+						end
+					end
+					
+					Console.info(self) {"Warmup complete."}
 				end
 			end
 		end

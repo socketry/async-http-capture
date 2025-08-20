@@ -10,6 +10,7 @@ require_relative "capture/cassette_store"
 require_relative "capture/console_store"
 require_relative "capture/interaction_tracker"
 require_relative "capture/middleware"
+require_relative "capture/environment"
 
 # @namespace
 module Async

@@ -68,13 +68,13 @@ describe Async::HTTP::Capture::Cassette do
 	
 	with ".load and #save" do
 		around do |&block|
-			Dir.mktmpdir do |tmpdir|
-				@tmpdir = tmpdir
+			Dir.mktmpdir do |root|
+				@root = root
 				block.call
 			end
 		end
 		
-		let(:test_directory_path) {File.join(@tmpdir, "test_cassette")}
+		let(:test_directory_path) {File.join(@root, "test_cassette")}
 		
 		it "saves and loads a cassette to/from directory" do
 			original_cassette = subject.new([sample_interaction])

@@ -12,13 +12,13 @@ require "tmpdir"
 
 describe Async::HTTP::Capture::Middleware do
 	around do |&block|
-		Dir.mktmpdir do |tmpdir|
-			@tmpdir = tmpdir
+		Dir.mktmpdir do |root|
+			@root = root
 			block.call
 		end
 	end
 	
-	let(:cassette_path) {File.join(@tmpdir, "test_cassette")}
+	let(:cassette_path) {File.join(@root, "test_cassette")}
 	let(:cassette_store) {Async::HTTP::Capture::CassetteStore.new(cassette_path)}
 	
 	let(:simple_app) do
@@ -34,7 +34,7 @@ describe Async::HTTP::Capture::Middleware do
 				request.body.each {|chunk| body << chunk}
 			end
 			
-			Protocol::HTTP::Response[200, {"Content-Type" => "text/plain"}, body]
+			Protocol::HTTP::Response[200, {"content-type" => "text/plain"}, body]
 		end
 	end
 	
@@ -54,14 +54,14 @@ describe Async::HTTP::Capture::Middleware do
 	
 	with "#call" do
 		let(:get_request) do
-			Protocol::HTTP::Request["GET", "/test", {"User-Agent" => "Test"}]
+			Protocol::HTTP::Request["GET", "/test", {"user-agent" => "Test"}]
 		end
 		
 		let(:post_request) do
 			Protocol::HTTP::Request[
 				"POST",
 				"/users",
-				{"Content-Type" => "application/json"},
+				{"content-type" => "application/json"},
 				['{"name": "John"}']
 			]
 		end
@@ -94,7 +94,7 @@ describe Async::HTTP::Capture::Middleware do
 				request_data = interaction.to_h[:request]
 				expect(request_data[:method]).to be == "GET"
 				expect(request_data[:path]).to be == "/test"
-				expect(request_data[:headers][:fields]).to be == [["User-Agent", "Test"]]
+				expect(request_data[:headers][:fields]).to be == [["user-agent", "Test"]]
 				expect(request_data[:headers][:tail]).to be_nil
 				
 				# Response should now be recorded too:
@@ -121,7 +121,7 @@ describe Async::HTTP::Capture::Middleware do
 				
 				expect(request_data[:method]).to be == "POST"
 				expect(request_data[:body]).to be == ['{"name": "John"}']
-				expect(request_data[:headers][:fields]).to be == [["Content-Type", "application/json"]]
+				expect(request_data[:headers][:fields]).to be == [["content-type", "application/json"]]
 				
 				# Response should now be recorded too:
 				response_data = interaction.to_h[:response]
@@ -166,7 +166,7 @@ describe Async::HTTP::Capture::Middleware do
 				expect(json_files).to have_attributes(length: be == 1)
 				
 				# Second request (different path for different content hash):
-				different_request = Protocol::HTTP::Request["GET", "/different", {"User-Agent" => "Test"}]
+				different_request = Protocol::HTTP::Request["GET", "/different", {"user-agent" => "Test"}]
 				response2 = middleware.call(different_request)
 				response2.body.each {|chunk|} if response2.body
 				
@@ -194,14 +194,14 @@ describe Async::HTTP::Capture::Middleware do
 	
 	with "#capture?" do
 		let(:get_request) do
-			Protocol::HTTP::Request["GET", "/test", {"User-Agent" => "Test"}]
+			Protocol::HTTP::Request["GET", "/test", {"user-agent" => "Test"}]
 		end
 		
 		let(:post_request) do
 			Protocol::HTTP::Request[
 				"POST",
 				"/users",
-				{"Content-Type" => "application/json"},
+				{"content-type" => "application/json"},
 				['{"name": "John"}']
 			]
 		end
@@ -267,6 +267,43 @@ describe Async::HTTP::Capture::Middleware do
 			
 			# But no interaction should be recorded:
 			expect(File).not.to be(:directory?, cassette_path)
+		end
+	end
+	
+	with "end-to-end recording behavior" do
+		it "records interactions when processing actual HTTP requests" do
+			# Test end-to-end behavior by directly calling middleware with real requests
+			# This verifies the middleware works in realistic scenarios
+			
+			middleware = subject.new(simple_app, store: cassette_store)
+			
+			# Make a request that simulates real HTTP traffic
+			request = Protocol::HTTP::Request["GET", "/", {
+				"host" => "localhost:9292",
+				"user-agent" => "Test Client",
+				"accept" => "*/*"
+			}]
+			
+			response = middleware.call(request)
+			expect(response.status).to be == 200
+			
+			# Consume response body to complete the interaction
+			body_chunks = []
+			response.body.each {|chunk| body_chunks << chunk}
+			expect(body_chunks.join).to be == "Hello, World!"
+			
+			# Verify the complete interaction was recorded to the cassette store
+			expect(File).to be(:directory?, cassette_path)
+			cassette = Async::HTTP::Capture::Cassette.load(cassette_path)
+			expect(cassette.interactions.length).to be == 1
+			
+			# Verify all details were captured correctly
+			interaction = cassette.interactions.first
+			expect(interaction.request.method).to be == "GET"
+			expect(interaction.request.path).to be == "/"
+			expect(interaction.request.headers["host"]).to be == "localhost:9292"
+			expect(interaction.response.status).to be == 200
+			expect(interaction.response.body.chunks.join).to be == "Hello, World!"
 		end
 	end
 end
