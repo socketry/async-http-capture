@@ -15,6 +15,10 @@ A Ruby gem for recording and replaying HTTP requests using `Protocol::HTTP`. Fea
 
 ## Usage
 
+Please see the [project documentation](https://socketry.github.io/async-http-capture/) for more details.
+
+  - [Getting Started](https://socketry.github.io/async-http-capture/guides/getting-started/index) - This guide explains how to get started with `async-http-capture`, a Ruby gem for recording and replaying HTTP requests using Protocol::HTTP.
+
 ### Basic Recording to Files
 
 ``` ruby
