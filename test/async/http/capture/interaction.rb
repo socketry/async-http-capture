@@ -43,7 +43,7 @@ describe Async::HTTP::Capture::Interaction do
 					fields: [["content-type", "application/json"]],
 					tail: nil
 				},
-				body: ['{"name": "John Doe"}']
+				body: ["eyJuYW1lIjogIkpvaG4gRG9lIn0="]  # Base64 encoded {"name": "John Doe"}
 			}
 		}
 	end
@@ -62,7 +62,7 @@ describe Async::HTTP::Capture::Interaction do
 					fields: [["content-type", "application/json"]],
 					tail: nil
 				},
-				body: ['{"id": 123, "name": "John Doe"}']
+				body: ["eyJpZCI6IDEyMywgIm5hbWUiOiAiSm9obiBEb2UifQ=="]  # Base64 encoded {"id": 123, "name": "John Doe"}
 			}
 		}
 	end
@@ -100,7 +100,7 @@ describe Async::HTTP::Capture::Interaction do
 			request = interaction.request
 			
 			expect(request.body).to be_a(Protocol::HTTP::Body::Buffered)
-			expect(request.body.chunks).to be == ['{"name": "John Doe"}']
+			expect(request.body.chunks).to be == ['{"name": "John Doe"}']  # Decoded from Base64
 		end
 		
 		it "returns nil when no request data is present" do
@@ -127,7 +127,7 @@ describe Async::HTTP::Capture::Interaction do
 			expect(response).to be_a(Protocol::HTTP::Response)
 			expect(response.status).to be == 200
 			expect(response.headers["content-type"]).to be == "application/json"
-			expect(response.body.chunks).to be == ['{"id": 123, "name": "John Doe"}']
+			expect(response.body.chunks).to be == ['{"id": 123, "name": "John Doe"}']  # Decoded from Base64
 		end
 		
 		it "returns nil when no response data is present" do

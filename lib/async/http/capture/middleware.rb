@@ -76,10 +76,13 @@ module Async
 					
 					# Wrap with completion callback:
 					::Protocol::HTTP::Body::Completable.wrap(request) do |error|
+						# Always capture whatever body data we have, even if there was an error
+						captured_body = rewindable_body.buffered rescue nil
+						
 						if error
-							tracker.request_completed(error: error)
+							tracker.request_completed(body: captured_body, error: error)
 						else
-							tracker.request_completed(body: rewindable_body.buffered)
+							tracker.request_completed(body: captured_body)
 						end
 					end
 					
@@ -102,10 +105,13 @@ module Async
 					
 					# Wrap with completion callback:
 					::Protocol::HTTP::Body::Completable.wrap(response) do |error|
+						# Always capture whatever body data we have, even if there was an error
+						captured_body = rewindable_body.buffered rescue nil
+						
 						if error
-							tracker.response_completed(error: error)
+							tracker.response_completed(body: captured_body, error: error)
 						else
-							tracker.response_completed(body: rewindable_body.buffered)
+							tracker.response_completed(body: captured_body)
 						end
 					end
 					

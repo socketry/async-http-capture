@@ -120,7 +120,7 @@ describe Async::HTTP::Capture::Middleware do
 				request_data = interaction.to_h[:request]
 				
 				expect(request_data[:method]).to be == "POST"
-				expect(request_data[:body]).to be == ['{"name": "John"}']
+				expect(request_data[:body]).to be == ["eyJuYW1lIjogIkpvaG4ifQ=="]  # Base64 encoded {"name": "John"}
 				expect(request_data[:headers][:fields]).to be == [["content-type", "application/json"]]
 				
 				# Response should now be recorded too:

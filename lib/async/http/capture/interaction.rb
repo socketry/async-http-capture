@@ -138,7 +138,7 @@ module Async
 					
 					# Add body chunks if present:
 					if request.body && request.body.is_a?(::Protocol::HTTP::Body::Buffered)
-						data[:body] = request.body.chunks
+						data[:body] = serialize_body_chunks(request.body.chunks)
 					end
 					
 					data
@@ -164,10 +164,28 @@ module Async
 					
 					# Add body chunks if present:
 					if response.body && response.body.is_a?(::Protocol::HTTP::Body::Buffered)
-						data[:body] = response.body.chunks
+						data[:body] = serialize_body_chunks(response.body.chunks)
 					end
 					
 					data
+				end
+				
+			private
+				
+				# Serialize body chunks using built-in pack/unpack1 for base64 encoding.
+				# @parameter chunks [Array(String)] The chunks to serialize.
+				# @returns [Array(String)] Base64 encoded chunks.
+				def serialize_body_chunks(chunks)
+					chunks.map(&Base64.method(:strict_encode64))
+				end
+				
+				# Deserialize body chunks from base64 using built-in unpack1.
+				# @parameter chunks [Array(String)] Base64 encoded chunks.
+				# @returns [Protocol::HTTP::Body::Buffered] Reconstructed buffered body.
+				def deserialize_body_chunks(chunks)
+					::Protocol::HTTP::Body::Buffered.wrap(
+							chunks.map(&Base64.method(:strict_decode64))
+						)
 				end
 				
 				# Create a Protocol::HTTP::Request from the stored request data.
@@ -197,7 +215,7 @@ module Async
 				# @parameter protocol [String | Array | Nil] The protocol information.
 				# @returns [Protocol::HTTP::Request] The constructed request object.
 				def build_request(scheme: nil, authority: nil, method:, path:, version: nil, headers: nil, body: nil, protocol: nil)
-					body = ::Protocol::HTTP::Body::Buffered.wrap(body) if body
+					body = deserialize_body_chunks(body) if body
 					headers = build_headers(headers) if headers
 					
 					::Protocol::HTTP::Request.new(
@@ -220,7 +238,7 @@ module Async
 				# @parameter protocol [String | Array | Nil] The protocol information.
 				# @returns [Protocol::HTTP::Response] The constructed response object.
 				def build_response(version: nil, status:, headers: nil, body: nil, protocol: nil)
-					body = ::Protocol::HTTP::Body::Buffered.wrap(body) if body
+					body = deserialize_body_chunks(body) if body
 					headers = build_headers(headers) if headers
 					
 					::Protocol::HTTP::Response.new(
