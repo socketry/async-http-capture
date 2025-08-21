@@ -27,6 +27,10 @@ module Async
 					@response_body = nil
 					@error = nil
 					@clock = Async::Clock.start
+					
+					# Will capture inspect data at completion time for accurate state:
+					@request_body_inspect = nil
+					@response_body_inspect = nil
 				end
 				
 				# Mark the request as ready (no body to process).
@@ -55,6 +59,9 @@ module Async
 					@request_complete = true
 					@request_body = body
 					
+					# Capture inspect at completion time for accurate stateful information:
+					@request_body_inspect = @original_request.body&.inspect
+					
 					if error
 						@error = capture_error_context(error, :request_body)
 					end
@@ -68,6 +75,9 @@ module Async
 				def response_completed(body: nil, error: nil)
 					@response_complete = true
 					@response_body = body
+					
+					# Capture inspect at completion time for accurate stateful information:
+					@response_body_inspect = @original_response&.body&.inspect
 					
 					if error
 						@error = capture_error_context(error, :response_body)
@@ -129,6 +139,11 @@ module Async
 					# Create and record the interaction:
 					interaction_data = {}
 					interaction_data[:error] = @error if @error
+					
+					# Add inspect data for debugging (captured at completion time):
+					interaction_data[:debug] = {}
+					interaction_data[:debug][:request_body_inspect] = @request_body_inspect if @request_body_inspect
+					interaction_data[:debug][:response_body_inspect] = @response_body_inspect if @response_body_inspect
 					
 					interaction = Interaction.new(
 						interaction_data,
