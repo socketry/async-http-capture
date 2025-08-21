@@ -49,7 +49,7 @@ describe Async::HTTP::Capture::Environment do
 			end
 		end
 		
-		let(:falcon_service) { falcon_service_class.new }
+		let(:falcon_service) {falcon_service_class.new}
 		
 		it "works with Falcon environment providing defaults" do
 			skip "Falcon not available" unless defined?(Falcon::Environment::Rack)
@@ -154,7 +154,7 @@ describe Async::HTTP::Capture::Environment do
 			recordings_only_class = Class.new do
 				include Async::HTTP::Capture::Environment
 				define_method(:capture_recordings_directory) {File.join(root, "recordings")}
-				define_method(:capture_console_logging) { false }  # Override default to disable console
+				define_method(:capture_console_logging) {false}  # Override default to disable console
 			end
 			service = recordings_only_class.new
 			
@@ -165,8 +165,8 @@ describe Async::HTTP::Capture::Environment do
 		it "returns ConsoleStore when recordings directory is disabled" do
 			console_only_class = Class.new do
 				include Async::HTTP::Capture::Environment
-				define_method(:capture_recordings_directory) { nil }  # Override default to disable recordings
-				define_method(:capture_console_logging) { true }
+				define_method(:capture_recordings_directory) {nil}  # Override default to disable recordings
+				define_method(:capture_console_logging) {true}
 			end
 			service = console_only_class.new
 			

@@ -48,6 +48,6 @@ CAPTURE_ENABLED=true bundle exec rackup config.ru -p 9292
 ## Features
 
 - **Automatic Replay**: Environment loads and replays existing recordings for warmup
-- **Content-Addressed Storage**: Each unique request gets saved as a timestamped, content-addressed JSON file
+- **Timestamped Storage**: Each unique request gets saved as a timestamped JSON file
 - **Parallel-Safe Recording**: Multiple processes can record simultaneously
 - **Console Logging**: Real-time visibility into recorded interactions

@@ -17,7 +17,7 @@ $ bundle add async-http-capture
 - A {ruby Async::HTTP::Capture::Middleware} which captures HTTP requests and responses as they pass through your application.
 - An {ruby Async::HTTP::Capture::Interaction} which represents a single HTTP request/response pair with lazy Protocol::HTTP object construction.
 - A {ruby Async::HTTP::Capture::Cassette} which is a collection of interactions that can be loaded from and saved to JSON files.
-- A {ruby Async::HTTP::Capture::CassetteStore} which provides content-addressed storage, saving each interaction to a separate file named by its content hash.
+- A {ruby Async::HTTP::Capture::CassetteStore} which provides timestamped storage, saving each interaction to a separate file named by timestamp.
 - A {ruby Async::HTTP::Capture::ConsoleStore} which logs interactions to the console for debugging purposes.
 
 ## Usage
@@ -35,7 +35,7 @@ Here's how to record HTTP interactions to files:
 ~~~ ruby
 require "async/http/capture"
 
-# Create a store that saves to content-addressed files:
+# Create a store that saves to timestamped files:
 store = Async::HTTP::Capture::CassetteStore.new("interactions")
 
 # Create your application
@@ -47,7 +47,7 @@ middleware = Async::HTTP::Capture::Middleware.new(app, store: store)
 # Make requests - they will be automatically recorded:
 request = Protocol::HTTP::Request["GET", "/users"]
 response = middleware.call(request)
-# This creates a file like recordings/20250821-105406-271633-4b51df4bdd5089b1.json
+# This creates a file like recordings/20250821-105406-271633-12345-67890.json
 ~~~
 
 ### Recording with Console Output
@@ -95,22 +95,21 @@ response = middleware.call(request)
 # Both request and response are recorded.
 ~~~
 
-## Content-Addressed Storage
+## Timestamped Storage
 
-Each interaction is saved to a file named with timestamp and content hash, providing several benefits:
+Each interaction is saved to a file named with timestamp, process ID, and object ID, providing several benefits:
 
 ~~~ 
 recordings/
-├── 20250821-105406-271633-4b51df4bdd5089b1.json  # GET /users
-├── 20250821-105006-257022-fbbb5beb8add436b.json  # POST /orders
-└── 20250820-101234-567890-9876543210fedcba.json  # GET /health
+├── 20250821-105406-271633-12345-67890.json  # GET /users
+├── 20250821-105006-257022-12346-67891.json  # POST /orders
+└── 20250820-101234-567890-12347-67892.json  # GET /health
 ~~~
 
 Benefits:
-- **Automatic de-duplication**: Identical interactions → same filename
-- **Parallel-safe**: Multiple processes can write without conflicts
-- **Content integrity**: Hash verifies file contents
-- **Git-friendly**: Stable filenames for version control
+- **Chronological ordering**: Files sorted by timestamp
+- **Parallel-safe**: Multiple processes can write without conflicts  
+- **Human-readable**: Timestamps are easy to understand
 
 ## Application Warmup
 
@@ -178,7 +177,7 @@ middleware = Async::HTTP::Capture::Middleware.new(app, store: custom_store)
 ## Key Features
 
 - **Pure Protocol::HTTP**: Works directly with Protocol::HTTP objects, no lossy conversions
-- **Content-Addressed Storage**: Each interaction saved as separate JSON file with content hash
+- **Timestamped Storage**: Each interaction saved as separate JSON file with timestamp
 - **Parallel-Safe**: Multiple processes can record simultaneously without conflicts
 - **Flexible Stores**: Pluggable storage backends (files, console logging, etc.)
 - **Complete Headers**: Full round-trip serialization including `fields` and `tail`

@@ -92,23 +92,19 @@ describe Async::HTTP::Capture::CassetteStore do
 			interaction2 = Async::HTTP::Capture::Interaction.new({}, request: simple_request)
 			
 			store.call(interaction1)
-			
-			# Small delay to ensure different timestamp:
-			sleep(0.001)
-			
 			store.call(interaction2)
 			
 			# With timestamp prefixes, identical content creates separate files at different times:
 			json_files = Dir.glob(File.join(directory_path, "*.json"))
 			expect(json_files).to have_attributes(length: be == 2)
 			
-			# Both files should have the same content hash but different timestamps:
+			# Both files should have different timestamps:
 			filenames = json_files.map {|path| File.basename(path)}
-			content_hash = interaction1.content_hash
+			expect(filenames[0]).not.to be == filenames[1]  # Different timestamps
 			
+			# Should match pattern: `YYYYMMDD-HHMMSS-MICROSECONDS-PID-OBJECTID.json`:
 			filenames.each do |filename|
-				expect(filename).to be(:include?, content_hash)
-				expect(filename).to be(:match?, /^\d{8}-\d{6}-\d{6}-[0-9a-f]{16}\.json$/)
+				expect(filename).to be(:match?, /^\d{8}-\d{6}-\d{6}-\d+-\d+\.json$/)
 			end
 		end
 		
@@ -126,18 +122,15 @@ describe Async::HTTP::Capture::CassetteStore do
 			json_files = Dir.glob(File.join(directory_path, "*.json"))
 			expect(json_files).to have_attributes(length: be == 2)
 			
-			# Check that filenames follow timestamp-hash pattern:
+			# Check that filenames follow timestamp pattern:
 			filenames = json_files.map {|path| File.basename(path)}
 			filenames.each do |filename|
-				# Format should be: YYYYMMDD-HHMMSS-MICROSECONDS-{content_hash}.json
-				expect(filename).to be(:match?, /^\d{8}-\d{6}-\d{6}-[0-9a-f]{16}\.json$/)
+				# Format should be: YYYYMMDD-HHMMSS-MICROSECONDS-PID-OBJECTID.json
+				expect(filename).to be(:match?, /^\d{8}-\d{6}-\d{6}-\d+-\d+\.json$/)
 			end
 			
-			# Verify content hashes are present in filenames:
-			hash1 = interaction1.content_hash
-			hash2 = interaction2.content_hash
-			expect(filenames.any? {|f| f.include?(hash1)}).to be_truthy
-			expect(filenames.any? {|f| f.include?(hash2)}).to be_truthy
+			# Different interactions should create different files (by timestamp)
+			expect(filenames[0]).not.to be == filenames[1]
 		end
 	end
 end

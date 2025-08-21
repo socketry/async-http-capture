@@ -153,36 +153,4 @@ describe Async::HTTP::Capture::Interaction do
 			expect(interaction.to_h).to be == simple_request_data
 		end
 	end
-	
-	with "#content_hash" do
-		it "generates a consistent hash for the same data" do
-			interaction1 = subject.new(simple_request_data)
-			interaction2 = subject.new(simple_request_data)
-			
-			expect(interaction1.content_hash).to be == interaction2.content_hash
-		end
-		
-		it "generates different hashes for different data" do
-			other_data = {
-				request: {
-					method: "POST",
-					path: "/different"
-				}
-			}
-			
-			interaction1 = subject.new(simple_request_data)
-			interaction2 = subject.new(other_data)
-			
-			expect(interaction1.content_hash).not.to be == interaction2.content_hash
-		end
-		
-		it "returns a 16-character hexadecimal string" do
-			interaction = subject.new(simple_request_data)
-			hash = interaction.content_hash
-			
-			expect(hash).to be_a(String)
-			expect(hash.length).to be == 16
-			expect(hash).to be(:match?, /\A[0-9a-f]{16}\z/)
-		end
-	end
 end

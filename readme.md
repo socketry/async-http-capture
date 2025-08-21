@@ -1,13 +1,13 @@
 # Async::HTTP::Capture
 
-A Ruby gem for recording and replaying HTTP requests using `Protocol::HTTP`. Features content-addressed storage, parallel-safe recording, and flexible store backends.
+A Ruby gem for recording and replaying HTTP requests using `Protocol::HTTP`. Features timestamped storage, parallel-safe recording, and flexible store backends.
 
 [![Development Status](https://github.com/socketry/async-http-capture/workflows/Test/badge.svg)](https://github.com/socketry/async-http-capture/actions?workflow=Test)
 
 ## Features
 
   - **Pure Protocol::HTTP**: Works directly with Protocol::HTTP objects, no lossy conversions
-  - **Content-Addressed Storage**: Each interaction saved as separate JSON file with content hash
+  - **Timestamped Storage**: Each interaction saved as separate JSON file with timestamp
   - **Parallel-Safe**: Multiple processes can record simultaneously without conflicts
   - **Flexible Stores**: Pluggable storage backends (files, console logging, etc.)
   - **Complete Headers**: Full round-trip serialization including `fields` and `tail`
@@ -24,7 +24,7 @@ Please see the [project documentation](https://socketry.github.io/async-http-cap
 ``` ruby
 require "async/http/capture"
 
-# Create a store that saves to content-addressed files:
+# Create a store that saves to timestamped files:
 store = Async::HTTP::Capture::CassetteStore.new("interactions")
 
 # Create middleware:
@@ -84,27 +84,26 @@ response = middleware.call(request)
   - **Stores**: Handle serialization, filtering, persistence, or logging
   - **Interaction**: Simple data container with lazy Protocol::HTTP object construction
 
-## Content-Addressed Storage
+## Timestamped Storage
 
-Each interaction is saved to a file named with timestamp and content hash:
+Each interaction is saved to a file named with timestamp, process ID, and object ID:
 
-        recordings/
-    ├── 20250821-105406-271633-4b51df4bdd5089b1.json  # GET /users
-    ├── 20250821-105006-257022-fbbb5beb8add436b.json  # POST /orders  
-    └── 20250820-101234-567890-9876543210fedcba.json  # GET /health
+    recordings/
+    ├── 20250821-105406-271633-12345-67890.json  # GET /users
+    ├── 20250821-105006-257022-12346-67891.json  # POST /orders
+    └── 20250820-101234-567890-12347-67892.json  # GET /health
 
 Benefits:
 
-  - **Automatic de-duplication**: Identical interactions → same filename
+  - **Chronological ordering**: Files sorted by timestamp
   - **Parallel-safe**: Multiple processes can write without conflicts
-  - **Content integrity**: Hash verifies file contents
-  - **Git-friendly**: Stable filenames for version control
+  - **Human-readable**: Timestamps are easy to understand
 
 ## Store Implementations
 
 ### CassetteStore
 
-Saves interactions to content-addressed JSON files in a directory.
+Saves interactions to timestamped JSON files in a directory.
 
 ### ConsoleStore
 

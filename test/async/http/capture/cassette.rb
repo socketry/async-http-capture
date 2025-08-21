@@ -94,7 +94,7 @@ describe Async::HTTP::Capture::Cassette do
 			expect(loaded_interaction.to_h).to be == sample_interaction_data
 		end
 		
-		it "saves each interaction as a separate file using content hash" do
+		it "saves each interaction as a separate file using timestamps" do
 			interaction1 = Async::HTTP::Capture::Interaction.new({
 				request: { method: "GET", path: "/test1" }
 			})
@@ -109,13 +109,13 @@ describe Async::HTTP::Capture::Cassette do
 			json_files = Dir.glob(File.join(test_directory_path, "*.json"))
 			expect(json_files).to have_attributes(length: be == 2)
 			
-			# Check that files are named with content hashes:
-			expected_filename1 = "#{interaction1.content_hash}.json"
-			expected_filename2 = "#{interaction2.content_hash}.json"
-			
+			# Check that files are named with timestamps and index:
 			filenames = json_files.map {|path| File.basename(path)}
-			expect(filenames).to be(:include?, expected_filename1)
-			expect(filenames).to be(:include?, expected_filename2)
+			
+			# Should match pattern: YYYYMMDD-HHMMSS-MICROSECONDS-INDEX.json
+			filenames.each do |filename|
+				expect(filename).to be(:match?, /^\d{8}-\d{6}-\d{6}-\d+\.json$/)
+			end
 		end
 		
 		it "handles loading from non-existent directory" do

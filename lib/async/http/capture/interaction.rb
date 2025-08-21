@@ -3,7 +3,7 @@
 # Released under the MIT License.
 # Copyright, 2025, by Samuel Williams.
 
-require "digest/sha2"
+
 require "json"
 require "protocol/http/request"
 require "protocol/http/response"
@@ -61,16 +61,7 @@ module Async
 					new(hash)
 				end
 				
-				# Generate a content-addressed hash for this interaction.
-				# This hash can be used as a unique filename for content-addressed storage.
-				# @returns [String] A 16-character hexadecimal hash of the interaction content.
-				def content_hash
-					# Create a consistent JSON representation for hashing:
-					json_string = JSON.generate(serialize, sort_keys: true)
-					Digest::SHA256.hexdigest(json_string)[0, 16]
-				end
-				
-				# Serialize the interaction to a data format suitable for storage or hashing.
+				# Serialize the interaction to a data format suitable for storage.
 				# Converts Protocol::HTTP objects to plain data structures.
 				# @returns [Hash] The serialized interaction data.
 				def serialize

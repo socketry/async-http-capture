@@ -52,15 +52,16 @@ module Async
 					return self.new(interactions)
 				end
 				
-				# Save the cassette to a directory using content-addressed storage.
-				# Each interaction is saved as a separate JSON file named by its content hash.
-				# This approach provides de-duplication and parallel-safe recording.
+				# Save the cassette to a directory using timestamped files.
+				# Each interaction is saved as a separate JSON file with a timestamp-based name.
+				# This approach provides parallel-safe recording.
 				# @parameter directory_path [String] The path to the directory where interactions should be saved.
 				def save(directory_path)
 					FileUtils.mkdir_p(directory_path)
 					
-					@interactions.each do |interaction|
-						filename = "#{interaction.content_hash}.json"
+					@interactions.each_with_index do |interaction, index|
+						timestamp = Time.now.strftime("%Y%m%d-%H%M%S-%6N") 
+						filename = "#{timestamp}-#{index}.json"
 						file_path = File.join(directory_path, filename)
 						File.write(file_path, JSON.pretty_generate(interaction.to_h))
 					end
