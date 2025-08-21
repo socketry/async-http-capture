@@ -1,0 +1,139 @@
+{
+  "debug": {
+    "request_body": {
+      "class": "Protocol::HTTP::Body::Completable",
+      "body": {
+        "class": "Protocol::HTTP::Body::Rewindable",
+        "body": {
+          "class": "Async::HTTP::Protocol::HTTP1::Finishable",
+          "body": {
+            "class": "Protocol::HTTP1::Body::Fixed",
+            "length": 33,
+            "stream": false,
+            "ready": false,
+            "empty": true
+          }
+        },
+        "index": 1,
+        "chunks": 1
+      },
+      "callback": "#<Proc:0x000000011e5eab90 /Users/samuel/Developer/socketry/async-http-record/lib/async/http/capture/middleware.rb:78>"
+    },
+    "response_body": {
+      "class": "Protocol::HTTP::Body::Completable",
+      "body": {
+        "class": "Protocol::HTTP::Body::Rewindable",
+        "body": {
+          "class": "Protocol::HTTP::Body::Deflate",
+          "body": {
+            "class": "Protocol::Rack::Body::Enumerable",
+            "length": 202,
+            "stream": false,
+            "ready": true,
+            "empty": false
+          },
+          "input_length": 202,
+          "output_length": 184,
+          "compression_ratio": 91.09
+        },
+        "index": 2,
+        "chunks": 2
+      },
+      "callback": "#<Proc:0x000000011e5e9088 /Users/samuel/Developer/socketry/async-http-record/lib/async/http/capture/middleware.rb:107>"
+    }
+  },
+  "request": {
+    "scheme": "http",
+    "authority": "localhost:9292",
+    "method": "POST",
+    "path": "/post",
+    "version": "HTTP/1.1",
+    "protocol": null,
+    "headers": {
+      "fields": [
+        [
+          "Connection",
+          "keep-alive"
+        ],
+        [
+          "sec-ch-ua-platform",
+          "\"macOS\""
+        ],
+        [
+          "User-Agent",
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
+        ],
+        [
+          "sec-ch-ua",
+          "\"Not;A=Brand\";v=\"99\", \"Google Chrome\";v=\"139\", \"Chromium\";v=\"139\""
+        ],
+        [
+          "sec-ch-ua-mobile",
+          "?0"
+        ],
+        [
+          "Accept",
+          "*/*"
+        ],
+        [
+          "Origin",
+          "http://localhost:9292"
+        ],
+        [
+          "Sec-Fetch-Site",
+          "same-origin"
+        ],
+        [
+          "Sec-Fetch-Mode",
+          "cors"
+        ],
+        [
+          "Sec-Fetch-Dest",
+          "empty"
+        ],
+        [
+          "Referer",
+          "http://localhost:9292/"
+        ],
+        [
+          "Accept-Encoding",
+          "gzip, deflate, br, zstd"
+        ],
+        [
+          "Accept-Language",
+          "en-US,en;q=0.9"
+        ]
+      ],
+      "tail": null
+    },
+    "body": [
+      "eyJtZXNzYWdlIjoiSGVsbG8gZnJvbSBicm93c2VyISJ9"
+    ]
+  },
+  "response": {
+    "version": null,
+    "status": 200,
+    "protocol": null,
+    "headers": {
+      "fields": [
+        [
+          "content-type",
+          "application/json"
+        ],
+        [
+          "vary",
+          "accept-encoding"
+        ],
+        [
+          "content-encoding",
+          "gzip"
+        ]
+      ],
+      "tail": 3
+    },
+    "body": [
+      "H4sIAAAAAAAAE0TNTQrCMBAF4L2niLPVYpoqSE7gTtEuA6U/Y42kSUxiSym9u61FhFk9vvdmWBECDXqf1wicwBVLlC1W5HK+pcTh640+wHZWpdEBdchCb780t1bJMg/S6N3TG72owlR9plDX4TGhJPmH1mErsZurg/j9FMAFnFApQ+7ONKRwpvPo1gLGZS/ISYa8sXOPUXaI6DFiccoon27PNjHjlMJq/AAAAP//",
+      "AwDOHSBjygAAAA=="
+    ]
+  }
+}

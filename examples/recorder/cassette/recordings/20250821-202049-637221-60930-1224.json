@@ -1,9 +1,33 @@
 {
+  "debug": {
+    "response_body": {
+      "class": "Protocol::HTTP::Body::Completable",
+      "body": {
+        "class": "Protocol::HTTP::Body::Rewindable",
+        "body": {
+          "class": "Protocol::HTTP::Body::Deflate",
+          "body": {
+            "class": "Protocol::Rack::Body::Enumerable",
+            "length": 39,
+            "stream": false,
+            "ready": true,
+            "empty": false
+          },
+          "input_length": 39,
+          "output_length": 62,
+          "compression_ratio": 158.97
+        },
+        "index": 2,
+        "chunks": 2
+      },
+      "callback": "#<Proc:0x000000011e5a3fd8 /Users/samuel/Developer/socketry/async-http-record/lib/async/http/capture/middleware.rb:107>"
+    }
+  },
   "request": {
     "scheme": "http",
     "authority": "localhost:9292",
     "method": "GET",
-    "path": "/",
+    "path": "/hello",
     "version": "HTTP/1.1",
     "protocol": null,
     "headers": {
@@ -11,10 +35,6 @@
         [
           "Connection",
           "keep-alive"
-        ],
-        [
-          "Cache-Control",
-          "max-age=0"
         ],
         [
           "sec-ch-ua",
@@ -42,7 +62,7 @@
         ],
         [
           "Sec-Fetch-Site",
-          "none"
+          "same-origin"
         ],
         [
           "Sec-Fetch-Mode",
@@ -55,6 +75,10 @@
         [
           "Sec-Fetch-Dest",
           "document"
+        ],
+        [
+          "Referer",
+          "http://localhost:9292/"
         ],
         [
           "Accept-Encoding",
@@ -77,12 +101,21 @@
         [
           "content-type",
           "text/plain"
+        ],
+        [
+          "vary",
+          "accept-encoding"
+        ],
+        [
+          "content-encoding",
+          "gzip"
         ]
       ],
-      "tail": 1
+      "tail": 3
     },
     "body": [
-      "Hello World!"
+      "H4sIAAAAAAAAE/JIzcnJ11EIzy/KSVFUMDIwMtU1sNA1MgQyrYDIxFJB29DIwAAAAAD//w==",
+      "AwCbsOkFJwAAAA=="
     ]
   }
 }

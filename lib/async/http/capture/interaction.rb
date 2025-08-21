@@ -3,8 +3,8 @@
 # Released under the MIT License.
 # Copyright, 2025, by Samuel Williams.
 
-
 require "json"
+
 require "protocol/http/request"
 require "protocol/http/response"
 require "protocol/http/headers"
@@ -172,11 +172,11 @@ module Async
 				
 			private
 				
-				# Serialize body chunks using built-in pack/unpack1 for base64 encoding.
+				# Serialize body chunks using built-in pack for base64 encoding.
 				# @parameter chunks [Array(String)] The chunks to serialize.
 				# @returns [Array(String)] Base64 encoded chunks.
 				def serialize_body_chunks(chunks)
-					chunks.map(&Base64.method(:strict_encode64))
+					chunks.map {|chunk| [chunk].pack("m0")}
 				end
 				
 				# Deserialize body chunks from base64 using built-in unpack1.
@@ -184,7 +184,7 @@ module Async
 				# @returns [Protocol::HTTP::Body::Buffered] Reconstructed buffered body.
 				def deserialize_body_chunks(chunks)
 					::Protocol::HTTP::Body::Buffered.wrap(
-							chunks.map(&Base64.method(:strict_decode64))
+							chunks.map {|encoded_chunk| encoded_chunk.unpack1("m0")}
 						)
 				end
 				

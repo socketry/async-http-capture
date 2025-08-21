@@ -1,0 +1,62 @@
+{
+  "debug": {
+    "response_body": {
+      "class": "Protocol::HTTP::Body::Completable",
+      "body": {
+        "class": "Protocol::HTTP::Body::Rewindable",
+        "body": {
+          "class": "Protocol::Rack::Body::Enumerable",
+          "length": 39,
+          "stream": false,
+          "ready": true,
+          "empty": false
+        },
+        "index": 1,
+        "chunks": 1
+      },
+      "callback": "#<Proc:0x0000000102cd9f30 /Users/samuel/Developer/socketry/async-http-record/lib/async/http/capture/middleware.rb:107>"
+    }
+  },
+  "request": {
+    "scheme": "http",
+    "authority": "127.0.0.1:9292",
+    "method": "GET",
+    "path": "/hello",
+    "version": "HTTP/1.1",
+    "protocol": null,
+    "headers": {
+      "fields": [
+        [
+          "User-Agent",
+          "curl/8.7.1"
+        ],
+        [
+          "Accept",
+          "*/*"
+        ]
+      ],
+      "tail": null
+    }
+  },
+  "response": {
+    "version": null,
+    "status": 200,
+    "protocol": null,
+    "headers": {
+      "fields": [
+        [
+          "content-type",
+          "text/plain"
+        ],
+        [
+          "vary",
+          "accept-encoding"
+        ]
+      ],
+      "tail": 2
+    },
+    "body": [
+      "SGVsbG8sIFdvcmxkISAyMDI1LTA4LTIxIDE5OjQ2OjU5ICsxMjAw"
+    ]
+  }
+}

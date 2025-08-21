@@ -1,0 +1,121 @@
+{
+  "debug": {
+    "response_body": {
+      "class": "Protocol::HTTP::Body::Completable",
+      "body": {
+        "class": "Protocol::HTTP::Body::Rewindable",
+        "body": {
+          "class": "Protocol::HTTP::Body::Deflate",
+          "body": {
+            "class": "Protocol::Rack::Body::Enumerable",
+            "length": 901,
+            "stream": false,
+            "ready": true,
+            "empty": false
+          },
+          "input_length": 901,
+          "output_length": 523,
+          "compression_ratio": 58.05
+        },
+        "index": 2,
+        "chunks": 2
+      },
+      "callback": "#<Proc:0x000000011e5a0a68 /Users/samuel/Developer/socketry/async-http-record/lib/async/http/capture/middleware.rb:107>"
+    }
+  },
+  "request": {
+    "scheme": "http",
+    "authority": "localhost:9292",
+    "method": "GET",
+    "path": "/headers",
+    "version": "HTTP/1.1",
+    "protocol": null,
+    "headers": {
+      "fields": [
+        [
+          "Connection",
+          "keep-alive"
+        ],
+        [
+          "sec-ch-ua",
+          "\"Not;A=Brand\";v=\"99\", \"Google Chrome\";v=\"139\", \"Chromium\";v=\"139\""
+        ],
+        [
+          "sec-ch-ua-mobile",
+          "?0"
+        ],
+        [
+          "sec-ch-ua-platform",
+          "\"macOS\""
+        ],
+        [
+          "Upgrade-Insecure-Requests",
+          "1"
+        ],
+        [
+          "User-Agent",
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
+        ],
+        [
+          "Accept",
+          "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"
+        ],
+        [
+          "Sec-Fetch-Site",
+          "same-origin"
+        ],
+        [
+          "Sec-Fetch-Mode",
+          "navigate"
+        ],
+        [
+          "Sec-Fetch-User",
+          "?1"
+        ],
+        [
+          "Sec-Fetch-Dest",
+          "document"
+        ],
+        [
+          "Referer",
+          "http://localhost:9292/"
+        ],
+        [
+          "Accept-Encoding",
+          "gzip, deflate, br, zstd"
+        ],
+        [
+          "Accept-Language",
+          "en-US,en;q=0.9"
+        ]
+      ],
+      "tail": null
+    }
+  },
+  "response": {
+    "version": null,
+    "status": 200,
+    "protocol": null,
+    "headers": {
+      "fields": [
+        [
+          "content-type",
+          "application/json"
+        ],
+        [
+          "vary",
+          "accept-encoding"
+        ],
+        [
+          "content-encoding",
+          "gzip"
+        ]
+      ],
+      "tail": 3
+    },
+    "body": [
+      "H4sIAAAAAAAAE2RS0W7aMBR971dYfmq7mEARY4DQxFhHq5a2aoq2B6TKOBfbwrFTxzBG1X+fnYStFOXFPudc33vPyesJQjgDJ0yK+whPLp9wFKCcOhGAWABNwRYV+rIG+yfA1XXP9dGrv3pgbLQG5qTRQbQCyAlVcgOl3PMJMDIWZEYDPcd3xg1Gw2+W6nSOB5vhHPd6cxyhOZ4YwxWgsbAmg5prtWuyROU6e48fdSBTs5AKQqOvzWP2QVG3NDarBskou0/+PzLLufWbkWtdAFtbII/gNy9c2BS3/qkKsGTEQbsAT81OKkXjTqOJTqeUSe1MIQboWjtQyAPoPkG/UKv53Oo8d8/QKM8V/ITFjXRxp91ttD+j05urp+lthJRcAZoAW5mz2oHY79hohg8ldEmtrEv2o4wYg7wcw8HWxcJlKqK+gWQ0hBFvA/Jp+xHN1OBl2Gz0IplRDjHdyGV9/A2LfI/mmkfn8Xkp/XLwQCG5hpTAlgmqOfg0Fu1S1n1v+A9wTJBEujKMgmZAjJVc6mPR1KSlSPtROHVwrAiml5m2jrnvPqLApYatsxBLrXiEJdiqTDiX9+NYGUaVMIXr9y56F/GhjeRSM5NKzUMB38k8Qiks/f8CEVrYCO0Kl36ouPXrr71ZoQI0mSUR6MravfDKVLMddsaefDt5+wsAAP//",
+      "AwA30UbShQMAAA=="
+    ]
+  }
+}

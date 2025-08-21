@@ -28,9 +28,9 @@ module Async
 					@error = nil
 					@clock = Async::Clock.start
 					
-					# Will capture inspect data at completion time for accurate state:
-					@request_body_inspect = nil
-					@response_body_inspect = nil
+					# Will capture body as_json data at completion time for accurate state:
+					@debug_request_body = nil
+					@debug_response_body = nil
 				end
 				
 				# Mark the request as ready (no body to process).
@@ -59,8 +59,8 @@ module Async
 					@request_complete = true
 					@request_body = body
 					
-					# Capture inspect at completion time for accurate stateful information:
-					@request_body_inspect = @original_request.body&.inspect
+					# Capture as_json at completion time for accurate stateful information:
+					@debug_request_body = @original_request.body&.as_json
 					
 					if error
 						@error = capture_error_context(error, :request_body)
@@ -76,8 +76,8 @@ module Async
 					@response_complete = true
 					@response_body = body
 					
-					# Capture inspect at completion time for accurate stateful information:
-					@response_body_inspect = @original_response&.body&.inspect
+					# Capture as_json at completion time for accurate stateful information:
+					@debug_response_body = @original_response&.body&.as_json
 					
 					if error
 						@error = capture_error_context(error, :response_body)
@@ -140,10 +140,10 @@ module Async
 					interaction_data = {}
 					interaction_data[:error] = @error if @error
 					
-					# Add inspect data for debugging (captured at completion time):
+					# Add as_json data for debugging (captured at completion time):
 					interaction_data[:debug] = {}
-					interaction_data[:debug][:request_body_inspect] = @request_body_inspect if @request_body_inspect
-					interaction_data[:debug][:response_body_inspect] = @response_body_inspect if @response_body_inspect
+					interaction_data[:debug][:request_body] = @debug_request_body if @debug_request_body
+					interaction_data[:debug][:response_body] = @debug_response_body if @debug_response_body
 					
 					interaction = Interaction.new(
 						interaction_data,

@@ -3,11 +3,12 @@ PATH
   specs:
     async-http-capture (0.1.0)
       async-http (~> 0.90)
+      protocol-http (>= 0.53.0)
 
 GEM
   remote: https://rubygems.org/
   specs:
-    async (2.27.3)
+    async (2.27.4)
       console (~> 1.29)
       fiber-annotation
       io-event (~> 1.11)
@@ -69,7 +70,7 @@ GEM
     metrics (0.13.0)
     openssl (3.3.0)
     protocol-hpack (1.5.1)
-    protocol-http (0.52.0)
+    protocol-http (0.53.0)
     protocol-http1 (0.34.1)
       protocol-http (~> 0.22)
     protocol-http2 (0.22.1)

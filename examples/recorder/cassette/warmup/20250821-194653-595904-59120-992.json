@@ -1,0 +1,62 @@
+{
+  "debug": {
+    "response_body": {
+      "class": "Protocol::HTTP::Body::Completable",
+      "body": {
+        "class": "Protocol::HTTP::Body::Rewindable",
+        "body": {
+          "class": "Protocol::Rack::Body::Enumerable",
+          "length": 644,
+          "stream": false,
+          "ready": true,
+          "empty": false
+        },
+        "index": 1,
+        "chunks": 1
+      },
+      "callback": "#<Proc:0x0000000102cd9c88 /Users/samuel/Developer/socketry/async-http-record/lib/async/http/capture/middleware.rb:107>"
+    }
+  },
+  "request": {
+    "scheme": "http",
+    "authority": "127.0.0.1:9292",
+    "method": "GET",
+    "path": "/",
+    "version": "HTTP/1.1",
+    "protocol": null,
+    "headers": {
+      "fields": [
+        [
+          "User-Agent",
+          "curl/8.7.1"
+        ],
+        [
+          "Accept",
+          "*/*"
+        ]
+      ],
+      "tail": null
+    }
+  },
+  "response": {
+    "version": null,
+    "status": 200,
+    "protocol": null,
+    "headers": {
+      "fields": [
+        [
+          "content-type",
+          "text/html"
+        ],
+        [
+          "vary",
+          "accept-encoding"
+        ]
+      ],
+      "tail": 2
+    },
+    "body": [
+      "PGh0bWw+CjxoZWFkPjx0aXRsZT5SZWNvcmRlciBFeGFtcGxlPC90aXRsZT48L2hlYWQ+Cjxib2R5PgoJPGgxPkhUVFAgQ2FwdHVyZSBSZWNvcmRpbmcgRXhhbXBsZTwvaDE+Cgk8cD5UaGlzIGFwcGxpY2F0aW9uIGRlbW9uc3RyYXRlcyBhc3luYy1odHRwLWNhcHR1cmUgcmVjb3JkaW5nLjwvcD4KCTx1bD4KCQk8bGk+PGEgaHJlZj0iL2hlbGxvIj5TaW1wbGUgSGVsbG88L2E+PC9saT4KCQk8bGk+PGEgaHJlZj0iL2pzb24iPkpTT04gUmVzcG9uc2U8L2E+PC9saT4KCQk8bGk+PGEgaHJlZj0iL2hlYWRlcnMiPlNob3cgUmVxdWVzdCBIZWFkZXJzPC9hPjwvbGk+CgkJPGxpPjxhIGhyZWY9Ii9wb3N0IiBvbmNsaWNrPSJwb3N0RXhhbXBsZSgpIj5QT1NUIEV4YW1wbGU8L2E+PC9saT4KCTwvdWw+Cgk8c2NyaXB0PgoJZnVuY3Rpb24gcG9zdEV4YW1wbGUoKSB7CgkJZmV0Y2goJy9wb3N0JywgewoJCQltZXRob2Q6ICdQT1NUJywKCQkJaGVhZGVyczogeydDb250ZW50LVR5cGUnOiAnYXBwbGljYXRpb24vanNvbid9LAoJCQlib2R5OiBKU09OLnN0cmluZ2lmeSh7bWVzc2FnZTogJ0hlbGxvIGZyb20gYnJvd3NlciEnfSkKCQl9KS50aGVuKHIgPT4gci50ZXh0KCkpLnRoZW4oYWxlcnQpOwoJfQoJPC9zY3JpcHQ+CjwvYm9keT4KPC9odG1sPgo="
+    ]
+  }
+}
