@@ -19,6 +19,8 @@ Please see the [project documentation](https://socketry.github.io/async-http-cap
 
   - [Getting Started](https://socketry.github.io/async-http-capture/guides/getting-started/index) - This guide explains how to get started with `async-http-capture`, a Ruby gem for recording and replaying HTTP requests using Protocol::HTTP.
 
+  - [Falcon Integration](https://socketry.github.io/async-http-capture/guides/falcon-integration/index) - This guide explains how to integrate `async-http-capture` with Falcon web server for recording and replaying HTTP interactions.
+
 ### Basic Recording to Files
 
 ``` ruby

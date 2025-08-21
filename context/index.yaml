@@ -10,3 +10,7 @@ files:
   title: Getting Started
   description: This guide explains how to get started with `async-http-capture`, a
     Ruby gem for recording and replaying HTTP requests using Protocol::HTTP.
+- path: falcon-integration.md
+  title: Falcon Integration
+  description: This guide explains how to integrate `async-http-capture` with Falcon
+    web server for recording and replaying HTTP interactions.
