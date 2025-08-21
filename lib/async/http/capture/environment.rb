@@ -70,6 +70,23 @@ module Async
 					end
 				end
 				
+				# The middleware class to use for recording.
+				def capture_middleware_class
+					Middleware
+				end
+				
+				# Wrap the middleware with the recording middleware.
+				# @parameter middleware [Middleware] The middleware to wrap.
+				# @parameter store [CassetteStore] The store to use for recording.
+				# @returns [Middleware] The wrapped middleware.
+				def capture_middleware(middleware)
+					if store = capture_recording_store
+						middleware = capture_middleware_class.new(middleware, store: store)
+					end
+					
+					return middleware
+				end
+				
 				# Set up middleware chain with recording support.
 				def middleware
 					# Get the underlying application by calling super:
@@ -79,11 +96,7 @@ module Async
 					capture_cassette&.replay(middleware)
 					
 					# Wrap with recording middleware if store is configured
-					if store = capture_recording_store
-						middleware = Middleware.new(middleware, store: store)
-					end
-					
-					return middleware
+					return capture_middleware(middleware)
 				end
 			end
 		end
