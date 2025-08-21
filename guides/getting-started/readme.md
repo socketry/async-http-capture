@@ -39,7 +39,7 @@ require "async/http/capture"
 store = Async::HTTP::Capture::CassetteStore.new("interactions")
 
 # Create your application
-app = ->(request) { Protocol::HTTP::Response[200, {}, ["OK"]] }
+app = ->(request) {Protocol::HTTP::Response[200, {}, ["OK"]]}
 
 # Wrap it with recording middleware:
 middleware = Async::HTTP::Capture::Middleware.new(app, store: store)
@@ -75,9 +75,9 @@ cassette.replay(app)
 
 # Option 2: Manual iteration for custom processing
 cassette.each do |interaction|
-  request = interaction.request  # Lazy Protocol::HTTP::Request construction
-  response = app.call(request)   # Send to your app
-  puts "#{request.method} #{request.path} -> #{response.status}"
+	request = interaction.request  # Lazy Protocol::HTTP::Request construction
+	response = app.call(request)   # Send to your app
+	puts "#{request.method} #{request.path} -> #{response.status}"
 end
 ~~~
 
@@ -87,8 +87,8 @@ The middleware automatically records both requests and responses:
 
 ~~~ ruby
 middleware = Async::HTTP::Capture::Middleware.new(
-  app, 
-  store: store
+	app, 
+	store: store
 )
 
 response = middleware.call(request)
@@ -123,17 +123,17 @@ endpoint = Async::HTTP::Endpoint.parse("https://api.example.com")
 store = Async::HTTP::Capture::CassetteStore.new("warmup_interactions")
 
 recording_middleware = Async::HTTP::Capture::Middleware.new(
-  nil,
-  store: store
+	nil,
+	store: store
 )
 
 client = Async::HTTP::Client.new(endpoint, middleware: [recording_middleware])
 
 # Make the requests you want to record
 Async do
-  client.get("/health")
-  client.get("/api/popular-items") 
-  client.post("/api/user-sessions", {user_id: 123})
+	client.get("/health")
+	client.get("/api/popular-items") 
+	client.post("/api/user-sessions", {user_id: 123})
 end
 
 # Step 2: Use recorded interactions to warm up your application
@@ -142,13 +142,13 @@ app = MyApplication.new
 
 puts "Warming up with #{cassette.interactions.size} recorded interactions..."
 cassette.each do |interaction|
-  request = interaction.request
-  begin
-    app_response = app.call(request)
-    puts "Warmed up #{request.method} #{request.path} -> #{app_response.status}"
-  rescue => error
-    puts "Warning: #{request.method} #{request.path} -> #{error.message}"
-  end
+	request = interaction.request
+	begin
+		app_response = app.call(request)
+		puts "Warmed up #{request.method} #{request.path} -> #{app_response.status}"
+	rescue => error
+		puts "Warning: #{request.method} #{request.path} -> #{error.message}"
+	end
 end
 
 puts "Warmup complete!"
@@ -160,28 +160,14 @@ You can create custom storage backends by implementing the {ruby Async::HTTP::Ca
 
 ~~~ ruby
 class MyCustomStore
-  include Async::HTTP::Capture::Store
-  
-  def call(interaction)
-    # Handle the interaction as needed
-    # e.g., send to a database, external service, etc.
-    puts "Custom handling: #{interaction.request.method} #{interaction.request.path}"
-  end
+	def call(interaction)
+		# Handle the interaction as needed
+		# e.g., send to a database, external service, etc.
+		puts "Custom handling: #{interaction.request.method} #{interaction.request.path}"
+	end
 end
 
 # Use your custom store
 custom_store = MyCustomStore.new
 middleware = Async::HTTP::Capture::Middleware.new(app, store: custom_store)
 ~~~
-
-## Key Features
-
-- **Pure Protocol::HTTP**: Works directly with Protocol::HTTP objects, no lossy conversions
-- **Timestamped Storage**: Each interaction saved as separate JSON file with timestamp
-- **Parallel-Safe**: Multiple processes can record simultaneously without conflicts
-- **Flexible Stores**: Pluggable storage backends (files, console logging, etc.)
-- **Complete Headers**: Full round-trip serialization including `fields` and `tail`
-- **Error Handling**: Captures network errors and connection issues
-- **Lazy Construction**: Protocol::HTTP objects are constructed on-demand for memory efficiency
-
-This makes `async-http-capture` ideal for testing, debugging, application warmup, and HTTP traffic analysis scenarios.
